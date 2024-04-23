@@ -66,5 +66,8 @@
     "typechain": "^8.3.2",
     "typescript": "^5.4.3"
   },
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.1.1",
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^5.0.2"
+  }
 }
