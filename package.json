@@ -1,0 +1,70 @@
+{
+  "name": "@borodutch/smart-contract-starter",
+  "version": "0.0.1",
+  "description": "A starter for Solidity smart contracts for Ethereum",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Borodutch/smart-contract-starter"
+  },
+  "license": "MIT",
+  "np": {
+    "2fa": false,
+    "tests": false,
+    "cleanup": false,
+    "yarn": false
+  },
+  "files": [
+    "dist/typechain/**/*"
+  ],
+  "main": "dist/typechain/index.js",
+  "types": "dist/typechain/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && npx hardhat compile",
+    "clean": "npx hardhat clean",
+    "test": "npx hardhat test",
+    "deploy": "npx hardhat run --network deploy scripts/deploy.ts",
+    "eth-lint": "yarn solhint 'contracts/**/*.sol'",
+    "lint": "prettier --check . && eslint --max-warnings 0 --ext ts scripts test && yarn eth-lint",
+    "release": "np",
+    "prepublishOnly": "yarn build && yarn tsc --skipLibCheck"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.3",
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.5",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "chai": "^4.3.10",
+    "dotenv": "^16.4.5",
+    "envalid": "^8.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-sort-imports-es6-autofix": "^0.6.0",
+    "ethers": "^6.11.1",
+    "hardhat": "^2.22.2",
+    "hardhat-gas-reporter": "^2.0.2",
+    "np": "^10.0.2",
+    "prettier": "^3.2.5",
+    "prettier-plugin-solidity": "^1.3.1",
+    "solhint": "^4.5.2",
+    "solidity-coverage": "^0.8.11",
+    "ts-node": "^10.9.2",
+    "typechain": "^8.3.2",
+    "typescript": "^5.4.3"
+  },
+  "packageManager": "yarn@4.1.1"
+}
