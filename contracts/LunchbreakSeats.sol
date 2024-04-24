@@ -117,7 +117,7 @@ contract LunchbreakSeats is
   function calculateTotalCost(
     uint256 startToken,
     uint256 amount
-  ) private view returns (uint256) {
+  ) private pure returns (uint256) {
     if (amount == 0) return 0;
     uint256 endToken = startToken + amount - 1;
     return calculateIntegral(endToken + 1) - calculateIntegral(startToken);

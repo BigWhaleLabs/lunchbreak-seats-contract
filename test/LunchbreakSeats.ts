@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat'
 import { expect } from 'chai'
 
-describe('MyERC721 contract tests', () => {
+describe('LunchbreakSeats contract tests', () => {
   before(async function () {
     const accounts = await ethers.getSigners()
     this.owner = accounts[0]
