@@ -9,6 +9,7 @@ dist
 # Hardhat files
 cache
 artifacts
+gasReporterOutput.json
 
 # logs
 *.log
