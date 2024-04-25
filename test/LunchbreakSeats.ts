@@ -122,4 +122,49 @@ describe('LunchbreakSeats contract tests', () => {
       )
     })
   })
+
+  describe('Seat Management', function () {
+    // Helper functions
+    // function calculateIntegral(x) {
+    //   return 10 * x ** 3 - 15 * x ** 2
+    // }
+    // function calculateTotalCost(startToken, amount) {
+    //   if (amount === 0) return 0
+    //   const endToken = startToken + amount - 1
+    //   return calculateIntegral(endToken + 1) - calculateIntegral(startToken)
+    // }
+
+    // Tests
+    it('should allow a user to buy seats and update balances correctly', async function () {
+      // const startToken = 0
+      // const amountToBuy = 10
+      // const totalCost = calculateTotalCost(startToken, amountToBuy)
+      // const fee = totalCost / feeDivider
+      // const compensation = totalCost / compensationDivider
+      // await lunchbreakSeats.connect(feeRecipient).setFeeRecipient(feeRecipient)
+      // await lunchbreakSeats.connect(owner).setFeeDivider(feeDivider)
+      // await lunchbreakSeats
+      //   .connect(owner)
+      //   .setCompensationDivider(compensationDivider)
+      // const transaction = await lunchbreakSeats
+      //   .connect(buyer)
+      //   .buySeats(owner.address, amountToBuy, { value: totalCost + fee })
+      // await transaction.wait()
+      // const newBuyerBalance = await lunchbreakSeats
+      //   .seats(owner.address)
+      //   .balances(buyer.address)
+      // expect(newBuyerBalance).to.equal(amountToBuy)
+      // const newOwnerBalance = await ethers.provider.getBalance(owner.address)
+      // const newFeeRecipientBalance = await ethers.provider.getBalance(
+      //   feeRecipient.address
+      // )
+      // expect(newOwnerBalance.sub(initialOwnerBalance)).to.be.closeTo(
+      //   compensation,
+      //   ethers.utils.parseEther('0.01')
+      // ) // Considering gas costs
+      // expect(newFeeRecipientBalance.sub(initialFeeRecipientBalance)).to.equal(
+      //   fee
+      // )
+    })
+  })
 })
