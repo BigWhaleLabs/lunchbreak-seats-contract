@@ -1,23 +1,31 @@
-// import { ethers } from 'hardhat'
-// import { expect } from 'chai'
+import { ethers, upgrades } from 'hardhat'
+import { expect } from 'chai'
 
 describe('LunchbreakSeats contract tests', () => {
-  // before(async function () {
-  //   const accounts = await ethers.getSigners()
-  //   this.owner = accounts[0]
-  //   this.factory = await ethers.getContractFactory('MyERC721')
-  // })
-  // describe('Constructor', function () {
-  //   it('should deploy the contract with the correct fields', async function () {
-  //     const name = 'MyERC721'
-  //     const symbol = 'TOKEN'
-  //     const contract = await this.factory.deploy(
-  //       name,
-  //       symbol,
-  //       this.owner.address
-  //     )
-  //     expect(await contract.name()).to.equal(name)
-  //     expect(await contract.symbol()).to.equal(symbol)
-  //   })
-  // })
+  let LunchbreakSeats, lunchbreakSeats, owner
+  const feeRecipient = '0x274459384b38eaF2322BeDf889EEC30Ae7e0E158'
+  const feeDivider = 20
+  const compensationDivider = 10
+
+  before(async function () {
+    ;[owner] = await ethers.getSigners()
+    LunchbreakSeats = await ethers.getContractFactory('LunchbreakSeats')
+    lunchbreakSeats = await upgrades.deployProxy(LunchbreakSeats, [
+      owner.address,
+      feeRecipient,
+      feeDivider,
+      compensationDivider,
+    ])
+  })
+
+  describe('Initialization', function () {
+    it('should have correct initial values', async function () {
+      expect(await lunchbreakSeats.owner()).to.equal(owner)
+      expect(await lunchbreakSeats.feeRecipient()).to.equal(feeRecipient)
+      expect(await lunchbreakSeats.feeDivider()).to.equal(feeDivider)
+      expect(await lunchbreakSeats.compensationDivider()).to.equal(
+        compensationDivider
+      )
+    })
+  })
 })

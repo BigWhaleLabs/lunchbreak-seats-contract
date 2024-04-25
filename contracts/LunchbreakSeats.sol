@@ -77,8 +77,8 @@ contract LunchbreakSeats is
 
   mapping(address => Seats) seats;
   address public feeRecipient; // Address to receive fees
-  uint256 feeDivider; // 1 / fee
-  uint256 compensationDivider; // 1 / compensation
+  uint256 public feeDivider; // 1 / fee
+  uint256 public compensationDivider; // 1 / compensation
 
   // Events
 
