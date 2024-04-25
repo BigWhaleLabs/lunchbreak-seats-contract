@@ -40,6 +40,7 @@ async function main() {
       '0xaBaf4EdFa5e492d5107fFf929198920e026C35a7',
       '0x274459384b38eaF2322BeDf889EEC30Ae7e0E158',
       20,
+      20,
     ],
     {
       kind: 'transparent',
