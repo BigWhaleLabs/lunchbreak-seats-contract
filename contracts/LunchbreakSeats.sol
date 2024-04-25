@@ -75,7 +75,7 @@ contract LunchbreakSeats is
     uint256 totalSupply;
   }
 
-  mapping(address => Seats) seats;
+  mapping(address => Seats) public seats;
   address public feeRecipient; // Address to receive fees
   uint256 public feeDivider; // 1 / fee
   uint256 public compensationDivider; // 1 / compensation
