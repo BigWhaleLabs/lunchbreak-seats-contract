@@ -1,6 +1,6 @@
 import { ContractTransactionResponse } from 'ethers'
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
-import { ethers, run } from 'hardhat'
+import { ethers, run, upgrades } from 'hardhat'
 
 async function printSignerInfo(signer: HardhatEthersSigner) {
   const address = await signer.getAddress()
@@ -31,11 +31,20 @@ async function main() {
   const [deployer] = await ethers.getSigners()
   await printSignerInfo(deployer)
   // Deploy contract
-  const contractName = 'MyERC721'
-  const contractSymbol = 'MYERC721'
+  const contractName = 'LunchbreakSeats'
   console.log(`Deploying ${contractName}...`)
   const Contract = await ethers.getContractFactory(contractName)
-  const contract = await Contract.deploy(contractName, contractSymbol, deployer)
+  const contract = await upgrades.deployProxy(
+    Contract,
+    [
+      '0xaBaf4EdFa5e492d5107fFf929198920e026C35a7',
+      '0x274459384b38eaF2322BeDf889EEC30Ae7e0E158',
+      20,
+    ],
+    {
+      kind: 'transparent',
+    }
+  )
   const deploymentTransaction = contract.deploymentTransaction()
   if (!deploymentTransaction) {
     throw new Error('Deployment transaction is null')
@@ -52,11 +61,11 @@ async function main() {
   try {
     await run('verify:verify', {
       address,
-      constructorArguments: [contractName, contractSymbol, deployer.address],
+      constructorArguments: [],
     })
   } catch (err) {
     console.log(
-      'Error verifying contract on Etherscan:',
+      'Error verifiying contract on Etherscan:',
       err instanceof Error ? err.message : err
     )
   }
