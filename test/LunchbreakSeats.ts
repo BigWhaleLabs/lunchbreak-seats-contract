@@ -1,3 +1,5 @@
+import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
+import { LunchbreakSeats } from 'typechain'
 import { ethers, upgrades } from 'hardhat'
 import { expect } from 'chai'
 
@@ -212,46 +214,61 @@ describe('LunchbreakSeats contract tests', () => {
     })
 
     describe('Seat Transactions', function () {
-      let buyer, seller, feeRecipient
+      let buyer, seller, buyer2, seller2, feeRecipient
 
       beforeEach(async function () {
-        ;[, buyer, seller, feeRecipient] = await ethers.getSigners()
+        ;[, buyer, seller, buyer2, seller2, feeRecipient] =
+          await ethers.getSigners()
         await this.lunchbreakSeats.setFeeRecipient(feeRecipient.address)
       })
 
-      it('Should allow the purchase of seats and distribute fees', async function () {
-        const amountToBuy = 10
+      async function buySeats(
+        lunchbreakSeats: LunchbreakSeats,
+        amountToBuy: bigint,
+        buyer: HardhatEthersSigner,
+        seller: HardhatEthersSigner
+      ) {
+        // Get initial balances
         const initialBuyerBalance = await ethers.provider.getBalance(buyer)
         const initialSellerBalance = await ethers.provider.getBalance(seller)
-        const initialFeeRecipientBalance =
-          await ethers.provider.getBalance(feeRecipient)
+        const initialFeeRecipientBalance = await ethers.provider.getBalance(
+          await lunchbreakSeats.feeRecipient()
+        )
+        const initialSeatBalance = await lunchbreakSeats.balanceOf(
+          seller.address,
+          buyer.address
+        )
 
-        const totalCost = await this.lunchbreakSeats.calculateTotalCost(
-          0,
+        // Get total cost
+        const supply = await lunchbreakSeats.supplyOf(seller.address)
+        const totalCost = await lunchbreakSeats.calculateTotalCost(
+          supply,
           amountToBuy
         )
-        const fee = totalCost / feeDivider
-        const compensation = totalCost / compensationDivider
-
-        const transactionResponse = await this.lunchbreakSeats
+        // Get fees
+        const fee = totalCost / (await lunchbreakSeats.feeDivider())
+        const compensation =
+          totalCost / (await lunchbreakSeats.compensationDivider())
+        // Buy seats
+        const transactionResponse = await lunchbreakSeats
           .connect(buyer)
           .buySeats(seller.address, amountToBuy, { value: totalCost })
         const receipt = await transactionResponse.wait()
-
+        if (!receipt) {
+          throw new Error('Buy transaction failed')
+        }
         // Calculate the gas used for the purchase transaction
         const gasUsed = BigInt(receipt.gasUsed * receipt.gasPrice)
-
-        // Check the seat balances
+        // Check seat balance
         expect(
-          await this.lunchbreakSeats.balanceOf(seller.address, buyer.address)
-        ).to.equal(amountToBuy)
-
+          await lunchbreakSeats.balanceOf(seller.address, buyer.address)
+        ).to.equal(initialSeatBalance + amountToBuy)
         // Check ETH balances to verify correct fee and compensation distribution
         const finalBuyerBalance = await ethers.provider.getBalance(buyer)
         const finalSellerBalance = await ethers.provider.getBalance(seller)
-        const finalFeeRecipientBalance =
-          await ethers.provider.getBalance(feeRecipient)
-
+        const finalFeeRecipientBalance = await ethers.provider.getBalance(
+          await lunchbreakSeats.feeRecipient()
+        )
         // Assertions to check the correctness of the fee and compensation distribution
         expect(finalBuyerBalance).to.equal(
           initialBuyerBalance - totalCost - gasUsed
@@ -260,6 +277,91 @@ describe('LunchbreakSeats contract tests', () => {
         expect(finalFeeRecipientBalance).to.equal(
           initialFeeRecipientBalance + fee
         )
+      }
+
+      async function sellSeats(
+        lunchbreakSeats: LunchbreakSeats,
+        amountToSell: bigint,
+        holder: HardhatEthersSigner,
+        user: HardhatEthersSigner
+      ) {
+        // Get initial balances
+        const initialHolderBalance = await ethers.provider.getBalance(holder)
+        const initialUserBalance = await ethers.provider.getBalance(user)
+        const initialFeeRecipientBalance = await ethers.provider.getBalance(
+          await lunchbreakSeats.feeRecipient()
+        )
+        const initialSeatBalance = await lunchbreakSeats.balanceOf(
+          user.address,
+          holder.address
+        )
+
+        // Get total cost
+        const supply = await lunchbreakSeats.supplyOf(user.address)
+        const totalCost = await lunchbreakSeats.calculateTotalCost(
+          supply - amountToSell,
+          amountToSell
+        )
+        // Get fees
+        const fee = totalCost / (await lunchbreakSeats.feeDivider())
+        const compensation =
+          totalCost / (await lunchbreakSeats.compensationDivider())
+        // Sell seats
+        const transactionResponse = await lunchbreakSeats
+          .connect(holder)
+          .sellSeats(user.address, amountToSell)
+        const receipt = await transactionResponse.wait()
+        if (!receipt) {
+          throw new Error('Sell transaction failed')
+        }
+        // Calculate the gas used for the purchase transaction
+        const gasUsed = BigInt(receipt.gasUsed * receipt.gasPrice)
+        // Check seat balance
+        expect(
+          await lunchbreakSeats.balanceOf(user.address, holder.address)
+        ).to.equal(initialSeatBalance - amountToSell)
+        // Check ETH balances to verify correct fee and compensation distribution
+        const finalHolderBalance = await ethers.provider.getBalance(holder)
+        const finalUserBalance = await ethers.provider.getBalance(user)
+        const finalFeeRecipientBalance = await ethers.provider.getBalance(
+          await lunchbreakSeats.feeRecipient()
+        )
+        // Assertions to check the correctness of the fee and compensation distribution
+        expect(finalHolderBalance).to.equal(
+          initialHolderBalance + totalCost - (fee + compensation) * 2n - gasUsed
+        )
+        expect(finalUserBalance).to.equal(initialUserBalance + compensation)
+        expect(finalFeeRecipientBalance).to.equal(
+          initialFeeRecipientBalance + fee
+        )
+      }
+
+      it('Should allow purchasing and selling fees', async function () {
+        await buySeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await sellSeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer2, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer2, seller)
+        await sellSeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await sellSeats(this.lunchbreakSeats, 10n, buyer2, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer2, seller2)
+        await sellSeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await sellSeats(this.lunchbreakSeats, 10n, buyer2, seller2)
+        await buySeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer2, seller)
+        await sellSeats(this.lunchbreakSeats, 5n, buyer, seller)
+        await sellSeats(this.lunchbreakSeats, 5n, buyer2, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer, seller)
+        await buySeats(this.lunchbreakSeats, 10n, buyer2, seller)
+        await expect(
+          sellSeats(this.lunchbreakSeats, 36n, buyer, seller)
+        ).to.be.revertedWith('Not enough seats to sell')
+        await expect(
+          sellSeats(this.lunchbreakSeats, 26n, buyer2, seller)
+        ).to.be.revertedWith('Not enough seats to sell')
       })
     })
   })

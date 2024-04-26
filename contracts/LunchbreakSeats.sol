@@ -182,7 +182,7 @@ contract LunchbreakSeats is
     );
     uint256 fee = returnAmount / feeDivider;
     uint256 compensation = returnAmount / compensationDivider;
-    returnAmount -= (fee + compensation);
+    returnAmount -= (fee + compensation) * 2;
 
     payable(msg.sender).transfer(returnAmount);
     payable(feeRecipient).transfer(fee);
