@@ -303,9 +303,13 @@ describe('LunchbreakSeats contract tests', () => {
           amountToSell
         )
         // Get fees
-        const fee = totalCost / (await lunchbreakSeats.feeDivider())
-        const compensation =
+        const initialFee = totalCost / (await lunchbreakSeats.feeDivider())
+        const initialCompensation =
           totalCost / (await lunchbreakSeats.compensationDivider())
+        const initialTotalCost = totalCost - initialFee - initialCompensation
+        const fee = initialTotalCost / (await lunchbreakSeats.feeDivider())
+        const compensation =
+          initialTotalCost / (await lunchbreakSeats.compensationDivider())
         // Sell seats
         const transactionResponse = await lunchbreakSeats
           .connect(holder)
@@ -328,7 +332,10 @@ describe('LunchbreakSeats contract tests', () => {
         )
         // Assertions to check the correctness of the fee and compensation distribution
         expect(finalHolderBalance).to.equal(
-          initialHolderBalance + totalCost - (fee + compensation) * 2n - gasUsed
+          initialHolderBalance +
+            totalCost -
+            (fee + compensation + initialFee + initialCompensation) -
+            gasUsed
         )
         expect(finalUserBalance).to.equal(initialUserBalance + compensation)
         expect(finalFeeRecipientBalance).to.equal(

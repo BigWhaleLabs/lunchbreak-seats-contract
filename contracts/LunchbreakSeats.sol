@@ -180,9 +180,14 @@ contract LunchbreakSeats is
       seats[user].totalSupply - amount,
       amount
     );
+    uint256 initialFee = returnAmount / feeDivider;
+    uint256 initialCompensation = returnAmount / compensationDivider;
+    returnAmount -= initialFee + initialCompensation;
+
     uint256 fee = returnAmount / feeDivider;
     uint256 compensation = returnAmount / compensationDivider;
-    returnAmount -= (fee + compensation) * 2;
+
+    returnAmount -= fee + compensation;
 
     payable(msg.sender).transfer(returnAmount);
     payable(feeRecipient).transfer(fee);
