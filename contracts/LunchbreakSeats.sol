@@ -150,6 +150,10 @@ contract LunchbreakSeats is
     return seats[user].balances[chairHolder];
   }
 
+  function supplyOf(address user) public view returns (uint256) {
+    return seats[user].totalSupply;
+  }
+
   // Seats logic
 
   function buySeats(address user, uint256 amount) public payable nonReentrant {
