@@ -77,6 +77,8 @@ contract LunchbreakSeats is
 
   mapping(address => Seats) public seats;
   address public feeRecipient; // Address to receive fees
+  uint256 public initialPrice; // Initial price of a seat
+  uint256 public curveFactor; // Factor for the bonding curve
   uint256 public feeDivider; // 1 / fee
   uint256 public compensationDivider; // 1 / compensation
 
@@ -102,11 +104,15 @@ contract LunchbreakSeats is
   function initialize(
     address initialOwner,
     address _feeRecipient,
+    uint256 _initialPrice,
+    uint256 _curveFactor,
     uint256 _feeDivider,
     uint256 _compensationDivider
   ) public initializer {
     __Ownable_init(initialOwner);
     feeRecipient = _feeRecipient;
+    initialPrice = _initialPrice;
+    curveFactor = _curveFactor;
     feeDivider = _feeDivider;
     compensationDivider = _compensationDivider;
   }
@@ -115,6 +121,14 @@ contract LunchbreakSeats is
 
   function setFeeRecipient(address _feeRecipient) public onlyOwner {
     feeRecipient = _feeRecipient;
+  }
+
+  function setInitialPrice(uint256 _initialPrice) public onlyOwner {
+    initialPrice = _initialPrice;
+  }
+
+  function setCurveFactor(uint256 _curveFactor) public onlyOwner {
+    curveFactor = _curveFactor;
   }
 
   function setFeeDivider(uint256 _feeDivider) public onlyOwner {
@@ -127,11 +141,22 @@ contract LunchbreakSeats is
     compensationDivider = _compensationDivider;
   }
 
+  // Getters
+
+  function balanceOf(
+    address user,
+    address chairHolder
+  ) public view returns (uint256) {
+    return seats[user].balances[chairHolder];
+  }
+
+  // Seats logic
+
   function buySeats(address user, uint256 amount) public payable nonReentrant {
     uint256 totalCost = calculateTotalCost(seats[user].totalSupply, amount);
     uint256 fee = totalCost / feeDivider;
     uint256 compensation = totalCost / compensationDivider;
-    require(msg.value >= totalCost + fee, "Insufficient ETH sent");
+    require(msg.value >= totalCost, "Insufficient ETH sent");
 
     payable(feeRecipient).transfer(fee);
     payable(user).transfer(compensation);
@@ -166,18 +191,20 @@ contract LunchbreakSeats is
 
   // Bonding curve math
 
-  // Bonding curve is 30x^2 - 30x
-  // Integral of the bonding curve is 10x^3 - 15x^2
-  function calculateIntegral(uint256 x) private pure returns (uint256) {
-    return 10 * x ** 3 - 15 * x ** 2;
+  // Bonding curve is 24x^2 - 10x
+  function costOfToken(uint256 tokenId) public view returns (uint256) {
+    return ((24 * tokenId ** 2) - (10 * tokenId)) * curveFactor + initialPrice;
   }
 
   function calculateTotalCost(
-    uint256 startToken,
-    uint256 amount
-  ) private pure returns (uint256) {
-    if (amount == 0) return 0;
-    uint256 endToken = startToken + amount - 1;
-    return calculateIntegral(endToken + 1) - calculateIntegral(startToken);
+    uint256 startId,
+    uint256 numTokens
+  ) public view returns (uint256) {
+    uint256 totalCost = 0;
+    uint256 endId = startId + numTokens;
+    for (uint256 tokenId = startId; tokenId < endId; tokenId++) {
+      totalCost += costOfToken(tokenId);
+    }
+    return totalCost;
   }
 }
