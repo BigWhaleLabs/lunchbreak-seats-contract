@@ -20,6 +20,11 @@
       "address": "0x5f4B91Cc6da3593881Ef0dEF4937550114E24CCd",
       "txHash": "0x0f39317d878110dce3bf06e16bccfedf06d72299a89575fd8c8a35c29369a24f",
       "kind": "transparent"
+    },
+    {
+      "address": "0x1A32ac60539Db5A84d64746419DeBe798c7CB158",
+      "txHash": "0x56f26db8b749f85261636233382cd19558585ddb5d4128953e0d46f69bfd05d0",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -376,6 +381,189 @@
     "9074883c36509c312490a89750425574518c0c208147a0349aaf8942270f44dd": {
       "address": "0x2afd25e8aDFe037b79c25D1518ac9A6b8136Fd3e",
       "txHash": "0xde2ea8358bfc58e3daf0b9c652a2250f5834df3b4f90299e0898b912bac38c52",
+      "layout": {
+        "solcVersion": "0.8.23",
+        "storage": [
+          {
+            "label": "seats",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_struct(Seats)641_storage)",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:79"
+          },
+          {
+            "label": "feeRecipient",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:79"
+          },
+          {
+            "label": "initialPrice",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:80"
+          },
+          {
+            "label": "curveFactor",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:81"
+          },
+          {
+            "label": "feeDivider",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:83"
+          },
+          {
+            "label": "compensationDivider",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:83"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)65_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)14_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ReentrancyGuardStorage)140_storage": {
+            "label": "struct ReentrancyGuardUpgradeable.ReentrancyGuardStorage",
+            "members": [
+              {
+                "label": "_status",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_mapping(t_address,t_struct(Seats)641_storage)": {
+            "label": "mapping(address => struct LunchbreakSeats.Seats)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Seats)641_storage": {
+            "label": "struct LunchbreakSeats.Seats",
+            "members": [
+              {
+                "label": "balances",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "totalSupply",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "4d238e6b3e68eecb392e25f469fb7e8f148dc462b458f4d0544227c7a35ba813": {
+      "address": "0xBaC9e2acB03bD6D37Efb2Ee24AF678F32651D3e2",
+      "txHash": "0x5261899d6cf311ac7ef561bbccc10e14e903715091ebe172acbc9c236b0af2ac",
       "layout": {
         "solcVersion": "0.8.23",
         "storage": [
