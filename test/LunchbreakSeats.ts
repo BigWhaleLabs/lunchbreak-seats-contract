@@ -707,7 +707,7 @@ describe('LunchbreakSeats contract tests', () => {
     })
   })
 
-  describe.only('Message Escrow Tests with Referrals', function () {
+  describe('Message Escrow Tests with Referrals', function () {
     let owner, user, recipient, referrerUser, referrerRecipient
 
     beforeEach(async function () {
