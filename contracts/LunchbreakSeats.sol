@@ -265,6 +265,7 @@ contract LunchbreakSeats is
     address recipient
   ) public payable nonReentrant {
     uint256 amount = msg.value;
+    require(amount > 0, "No ETH sent");
     messagesEscrow[user][recipient] += amount;
     emit EscrowFunded(user, recipient, amount);
   }
