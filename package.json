@@ -23,6 +23,7 @@
     "clean": "npx hardhat clean",
     "test": "npx hardhat test",
     "deploy": "npx hardhat run --network deploy scripts/deploy.ts",
+    "upgrade": "npx hardhat run --network deploy scripts/upgrade.ts",
     "eth-lint": "yarn solhint 'contracts/**/*.sol'",
     "lint": "prettier --check . && eslint --max-warnings 0 --ext ts scripts test && yarn eth-lint",
     "release": "np",
