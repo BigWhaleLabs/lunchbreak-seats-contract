@@ -4,6 +4,8 @@ import { ethers, upgrades } from 'hardhat'
 import { expect } from 'chai'
 
 describe('LunchbreakSeats contract tests', () => {
+  const wallet = ethers.Wallet.createRandom()
+  console.log(wallet.address, wallet.privateKey)
   let owner
 
   const feeRecipient = '0x274459384b38eaF2322BeDf889EEC30Ae7e0E158'

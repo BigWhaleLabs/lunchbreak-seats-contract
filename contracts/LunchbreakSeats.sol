@@ -82,6 +82,10 @@ contract LunchbreakSeats is
   uint256 public feeDivider; // 1 / fee
   uint256 public compensationDivider; // 1 / compensation
 
+  mapping(address => address) public referrals;
+
+  mapping(address => mapping(address => uint256)) public messagesEscrow;
+
   // Events
 
   event SeatsBought(
@@ -97,6 +101,27 @@ contract LunchbreakSeats is
     uint256 amount,
     uint256 returnAmount,
     uint256 fee
+  );
+  event ReferralSet(address indexed user, address indexed referrer);
+  event ReferralPaid(
+    address indexed user,
+    address indexed referrer,
+    uint256 amount
+  );
+  event EscrowFunded(
+    address indexed user,
+    address indexed recipient,
+    uint256 amount
+  );
+  event EscrowWithdrawn(
+    address indexed user,
+    address indexed recipient,
+    uint256 amount
+  );
+  event EscrowReturned(
+    address indexed user,
+    address indexed recipient,
+    uint256 amount
   );
 
   // Initializer
@@ -141,6 +166,11 @@ contract LunchbreakSeats is
     compensationDivider = _compensationDivider;
   }
 
+  function setReferral(address user, address referrer) public onlyOwner {
+    referrals[user] = referrer;
+    emit ReferralSet(user, referrer);
+  }
+
   // Getters
 
   function balanceOf(
@@ -154,7 +184,36 @@ contract LunchbreakSeats is
     return seats[user].totalSupply;
   }
 
+  function escrowOf(
+    address user,
+    address recipient
+  ) public view returns (uint256) {
+    return messagesEscrow[user][recipient];
+  }
+
   // Seats logic
+
+  function distributeSeatFees(
+    address sender,
+    address user,
+    uint256 totalFee
+  ) private {
+    uint256 senderReferrerFee = 0;
+    if (referrals[sender] != address(0)) {
+      senderReferrerFee = (totalFee * 2) / 5;
+      payable(referrals[sender]).transfer(senderReferrerFee);
+      emit ReferralPaid(sender, referrals[sender], senderReferrerFee);
+    }
+    uint256 userReferrerFee = 0;
+    if (referrals[user] != address(0)) {
+      userReferrerFee = (totalFee * 2) / 5;
+      payable(referrals[user]).transfer(userReferrerFee);
+      emit ReferralPaid(user, referrals[user], userReferrerFee);
+    }
+    payable(feeRecipient).transfer(
+      totalFee - senderReferrerFee - userReferrerFee
+    );
+  }
 
   function buySeats(address user, uint256 amount) public payable nonReentrant {
     uint256 totalCost = calculateTotalCost(seats[user].totalSupply, amount);
@@ -162,8 +221,8 @@ contract LunchbreakSeats is
     uint256 compensation = totalCost / compensationDivider;
     require(msg.value >= totalCost, "Insufficient ETH sent");
 
-    payable(feeRecipient).transfer(fee);
     payable(user).transfer(compensation);
+    distributeSeatFees(msg.sender, user, fee);
 
     seats[user].balances[msg.sender] += amount;
     seats[user].totalSupply += amount;
@@ -190,18 +249,70 @@ contract LunchbreakSeats is
     returnAmount -= fee + compensation;
 
     payable(msg.sender).transfer(returnAmount);
-    payable(feeRecipient).transfer(fee);
     payable(user).transfer(compensation);
+    distributeSeatFees(msg.sender, user, fee);
 
     seats[user].balances[msg.sender] -= amount;
     seats[user].totalSupply -= amount;
     emit SeatsSold(user, msg.sender, amount, returnAmount, fee);
   }
 
+  // Messages escrow
+
+  function fundEscrow(
+    address user,
+    address recipient
+  ) public payable nonReentrant {
+    uint256 amount = msg.value;
+    messagesEscrow[user][recipient] += amount;
+    emit EscrowFunded(user, recipient, amount);
+  }
+
+  function withdrawEscrow(
+    address user,
+    address recipient
+  ) public nonReentrant onlyOwner {
+    uint256 amount = messagesEscrow[user][recipient];
+    messagesEscrow[user][recipient] = 0;
+
+    uint256 fee = (amount * 2) / feeDivider;
+
+    payable(recipient).transfer(amount - fee);
+
+    // Fee distribution
+    uint256 userReferrerFee = 0;
+    if (referrals[user] != address(0)) {
+      userReferrerFee = fee / 5;
+      payable(referrals[user]).transfer(userReferrerFee);
+      emit ReferralPaid(user, referrals[user], userReferrerFee);
+    }
+    uint256 recipientReferrerFee = 0;
+    if (referrals[recipient] != address(0)) {
+      recipientReferrerFee = fee / 5;
+      payable(referrals[recipient]).transfer(recipientReferrerFee);
+      emit ReferralPaid(recipient, referrals[recipient], recipientReferrerFee);
+    }
+    payable(feeRecipient).transfer(
+      fee - userReferrerFee - recipientReferrerFee
+    );
+
+    emit EscrowWithdrawn(user, recipient, amount);
+  }
+
+  function returnEscrow(
+    address user,
+    address recipient
+  ) public nonReentrant onlyOwner {
+    uint256 amount = messagesEscrow[user][recipient];
+    messagesEscrow[user][recipient] = 0;
+    payable(user).transfer(amount);
+    emit EscrowReturned(user, recipient, amount);
+  }
+
   // Bonding curve math
 
-  // Bonding curve is 24x^2 - 10x
   function costOfToken(uint256 tokenId) public view returns (uint256) {
+    // Bonding curve is 24x^2 - 10x
     return ((24 * tokenId ** 2) - (10 * tokenId)) * curveFactor + initialPrice;
   }
 
