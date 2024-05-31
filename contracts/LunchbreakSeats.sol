@@ -275,14 +275,11 @@ contract LunchbreakSeats is
     address recipient
   ) public nonReentrant onlyOwner {
     uint256 amount = messagesEscrow[user][recipient];
+    require(amount > 0, "No ETH in escrow");
     messagesEscrow[user][recipient] = 0;
-
     uint256 fee = (amount * 2) / feeDivider;
-
     payable(recipient).transfer(amount - fee);
-
     distributeFees(user, recipient, fee, 1);
-
     emit EscrowWithdrawn(user, recipient, amount);
   }
 
@@ -291,6 +288,7 @@ contract LunchbreakSeats is
     address recipient
   ) public nonReentrant onlyOwner {
     uint256 amount = messagesEscrow[user][recipient];
+    require(amount > 0, "No ETH in escrow");
     messagesEscrow[user][recipient] = 0;
     payable(user).transfer(amount);
     emit EscrowReturned(user, recipient, amount);
