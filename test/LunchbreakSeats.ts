@@ -566,6 +566,22 @@ describe('LunchbreakSeats contract tests', () => {
           buyerReferral,
           sellerReferral
         )
+        await buySeatsWithReferral(
+          this.lunchbreakSeats,
+          10n,
+          buyer,
+          seller,
+          buyerReferral,
+          sellerReferral
+        )
+        await sellSeatsWithReferral(
+          this.lunchbreakSeats,
+          1n,
+          buyer,
+          seller,
+          buyerReferral,
+          sellerReferral
+        )
       })
     })
   })
