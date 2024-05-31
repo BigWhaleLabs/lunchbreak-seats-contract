@@ -193,25 +193,26 @@ contract LunchbreakSeats is
 
   // Seats logic
 
-  function distributeSeatFees(
-    address sender,
-    address user,
-    uint256 totalFee
+  function distributeFees(
+    address userA,
+    address userB,
+    uint256 totalFee,
+    uint256 multiplier
   ) private {
-    uint256 senderReferrerFee = 0;
-    if (referrals[sender] != address(0)) {
-      senderReferrerFee = (totalFee * 2) / 5;
-      payable(referrals[sender]).transfer(senderReferrerFee);
-      emit ReferralPaid(sender, referrals[sender], senderReferrerFee);
+    uint256 userAReferrerFee = 0;
+    if (referrals[userA] != address(0)) {
+      userAReferrerFee = (totalFee * multiplier) / 5;
+      payable(referrals[userA]).transfer(userAReferrerFee);
+      emit ReferralPaid(userA, referrals[userA], userAReferrerFee);
     }
-    uint256 userReferrerFee = 0;
-    if (referrals[user] != address(0)) {
-      userReferrerFee = (totalFee * 2) / 5;
-      payable(referrals[user]).transfer(userReferrerFee);
-      emit ReferralPaid(user, referrals[user], userReferrerFee);
+    uint256 userBReferrerFee = 0;
+    if (referrals[userB] != address(0)) {
+      userBReferrerFee = (totalFee * multiplier) / 5;
+      payable(referrals[userB]).transfer(userBReferrerFee);
+      emit ReferralPaid(userB, referrals[userB], userBReferrerFee);
     }
     payable(feeRecipient).transfer(
-      totalFee - senderReferrerFee - userReferrerFee
+      totalFee - userAReferrerFee - userBReferrerFee
     );
   }
 
@@ -222,7 +223,7 @@ contract LunchbreakSeats is
     require(msg.value >= totalCost, "Insufficient ETH sent");
 
     payable(user).transfer(compensation);
-    distributeSeatFees(msg.sender, user, fee);
+    distributeFees(msg.sender, user, fee, 2);
 
     seats[user].balances[msg.sender] += amount;
     seats[user].totalSupply += amount;
@@ -250,7 +251,7 @@ contract LunchbreakSeats is
 
     payable(msg.sender).transfer(returnAmount);
     payable(user).transfer(compensation);
-    distributeSeatFees(msg.sender, user, fee);
+    distributeFees(msg.sender, user, fee, 2);
 
     seats[user].balances[msg.sender] -= amount;
     seats[user].totalSupply -= amount;
@@ -279,22 +280,7 @@ contract LunchbreakSeats is
 
     payable(recipient).transfer(amount - fee);
 
-    // Fee distribution
-    uint256 userReferrerFee = 0;
-    if (referrals[user] != address(0)) {
-      userReferrerFee = fee / 5;
-      payable(referrals[user]).transfer(userReferrerFee);
-      emit ReferralPaid(user, referrals[user], userReferrerFee);
-    }
-    uint256 recipientReferrerFee = 0;
-    if (referrals[recipient] != address(0)) {
-      recipientReferrerFee = fee / 5;
-      payable(referrals[recipient]).transfer(recipientReferrerFee);
-      emit ReferralPaid(recipient, referrals[recipient], recipientReferrerFee);
-    }
-    payable(feeRecipient).transfer(
-      fee - userReferrerFee - recipientReferrerFee
-    );
+    distributeFees(user, recipient, fee, 1);
 
     emit EscrowWithdrawn(user, recipient, amount);
   }
