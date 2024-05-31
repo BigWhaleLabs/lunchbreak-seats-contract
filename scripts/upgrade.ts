@@ -11,7 +11,7 @@ async function main() {
         required: true,
         message: 'Proxy address',
         pattern: ethAddressRegex,
-        default: '0x060a92F0fa5C6Ef1091cDa03ED423ECddaf5321B', // Testnet
+        default: '0x2afd25e8aDFe037b79c25D1518ac9A6b8136Fd3e', // Testnet
       },
     },
   })
