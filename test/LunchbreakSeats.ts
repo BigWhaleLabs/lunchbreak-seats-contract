@@ -4,8 +4,6 @@ import { ethers, upgrades } from 'hardhat'
 import { expect } from 'chai'
 
 describe('LunchbreakSeats contract tests', () => {
-  const wallet = ethers.Wallet.createRandom()
-  console.log(wallet.address, wallet.privateKey)
   let owner
 
   const feeRecipient = '0x274459384b38eaF2322BeDf889EEC30Ae7e0E158'
@@ -371,6 +369,203 @@ describe('LunchbreakSeats contract tests', () => {
         await expect(
           sellSeats(this.lunchbreakSeats, 26n, buyer2, seller)
         ).to.be.revertedWith('Not enough seats to sell')
+      })
+    })
+
+    describe('Seat Transactions with Referrals', function () {
+      let buyer, seller, buyerReferral, sellerReferral, feeRecipient
+
+      beforeEach(async function () {
+        ;[, buyer, seller, buyerReferral, sellerReferral, feeRecipient] =
+          await ethers.getSigners()
+        await this.lunchbreakSeats.setFeeRecipient(feeRecipient.address)
+        // Set referrals
+        await this.lunchbreakSeats.setReferral(
+          buyer.address,
+          buyerReferral.address
+        )
+        await this.lunchbreakSeats.setReferral(
+          seller.address,
+          sellerReferral.address
+        )
+      })
+
+      async function buySeatsWithReferral(
+        lunchbreakSeats,
+        amountToBuy,
+        buyer,
+        seller,
+        buyerReferral,
+        sellerReferral
+      ) {
+        // Get initial balances
+        const initialBuyerBalance = await ethers.provider.getBalance(
+          buyer.address
+        )
+        const initialSellerBalance = await ethers.provider.getBalance(
+          seller.address
+        )
+        const initialBuyerReferralBalance = await ethers.provider.getBalance(
+          buyerReferral.address
+        )
+        const initialSellerReferralBalance = await ethers.provider.getBalance(
+          sellerReferral.address
+        )
+        const initialFeeRecipientBalance = await ethers.provider.getBalance(
+          feeRecipient.address
+        )
+
+        // Get total cost
+        const supply: bigint = await lunchbreakSeats.supplyOf(seller.address)
+        const totalCost: bigint = await lunchbreakSeats.calculateTotalCost(
+          supply,
+          amountToBuy
+        )
+        const fee = totalCost / (await lunchbreakSeats.feeDivider())
+        const referralFee = (fee * 2n) / 5n
+        const compensation =
+          totalCost / (await lunchbreakSeats.compensationDivider())
+
+        // Buyer initiates purchase
+        const transactionResponse = await lunchbreakSeats
+          .connect(buyer)
+          .buySeats(seller.address, amountToBuy, { value: totalCost })
+        const receipt = await transactionResponse.wait()
+        if (!receipt) {
+          throw new Error('Transaction failed')
+        }
+        const gasUsed = BigInt(receipt.gasUsed * receipt.gasPrice)
+
+        // Check new balances
+        const finalBuyerBalance = await ethers.provider.getBalance(
+          buyer.address
+        )
+        const finalSellerBalance = await ethers.provider.getBalance(
+          seller.address
+        )
+        const finalBuyerReferralBalance = await ethers.provider.getBalance(
+          buyerReferral.address
+        )
+        const finalSellerReferralBalance = await ethers.provider.getBalance(
+          sellerReferral.address
+        )
+        const finalFeeRecipientBalance = await ethers.provider.getBalance(
+          feeRecipient.address
+        )
+
+        expect(finalBuyerReferralBalance).to.equal(
+          initialBuyerReferralBalance + referralFee
+        )
+        expect(finalSellerReferralBalance).to.equal(
+          initialSellerReferralBalance + referralFee
+        )
+        expect(finalFeeRecipientBalance).to.equal(
+          initialFeeRecipientBalance + fee - 2n * referralFee
+        )
+        expect(finalBuyerBalance).to.equal(
+          initialBuyerBalance - totalCost - gasUsed
+        )
+        expect(finalSellerBalance).to.equal(initialSellerBalance + compensation)
+      }
+
+      async function sellSeatsWithReferral(
+        lunchbreakSeats,
+        amountToSell,
+        holder,
+        user,
+        holderReferral,
+        userReferral
+      ) {
+        // Get initial balances
+        const initialHolderBalance = await ethers.provider.getBalance(
+          holder.address
+        )
+        const initialUserBalance = await ethers.provider.getBalance(
+          user.address
+        )
+        const initialHolderReferralBalance = await ethers.provider.getBalance(
+          holderReferral.address
+        )
+        const initialUserReferralBalance = await ethers.provider.getBalance(
+          userReferral.address
+        )
+        const initialFeeRecipientBalance = await ethers.provider.getBalance(
+          feeRecipient.address
+        )
+
+        // Get total return amount
+        const supply: bigint = await lunchbreakSeats.supplyOf(user.address)
+        let totalReturn: bigint = await lunchbreakSeats.calculateTotalCost(
+          supply - amountToSell,
+          amountToSell
+        )
+        const initialFee = totalReturn / (await lunchbreakSeats.feeDivider())
+        const initialCompensation =
+          totalReturn / (await lunchbreakSeats.compensationDivider())
+        totalReturn -= initialFee + initialCompensation
+
+        const fee = totalReturn / (await lunchbreakSeats.feeDivider())
+        const referralFee = (fee * 2n) / 5n // 40% of the fee is distributed as referral fees
+        const compensation =
+          totalReturn / (await lunchbreakSeats.compensationDivider())
+
+        // Holder initiates selling
+        const transactionResponse = await lunchbreakSeats
+          .connect(holder)
+          .sellSeats(user.address, amountToSell)
+        const receipt = await transactionResponse.wait()
+        if (!receipt) {
+          throw new Error('Transaction failed')
+        }
+        const gasUsed = BigInt(receipt.gasUsed * receipt.gasPrice)
+
+        // Check new balances
+        const finalHolderBalance = await ethers.provider.getBalance(
+          holder.address
+        )
+        const finalUserBalance = await ethers.provider.getBalance(user.address)
+        const finalHolderReferralBalance = await ethers.provider.getBalance(
+          holderReferral.address
+        )
+        const finalUserReferralBalance = await ethers.provider.getBalance(
+          userReferral.address
+        )
+        const finalFeeRecipientBalance = await ethers.provider.getBalance(
+          feeRecipient.address
+        )
+
+        expect(finalHolderReferralBalance).to.equal(
+          initialHolderReferralBalance + referralFee
+        )
+        expect(finalUserReferralBalance).to.equal(
+          initialUserReferralBalance + referralFee
+        )
+        expect(finalFeeRecipientBalance).to.equal(
+          initialFeeRecipientBalance + fee - 2n * referralFee
+        )
+        expect(finalHolderBalance).to.equal(
+          initialHolderBalance + totalReturn - fee - compensation - gasUsed
+        )
+        expect(finalUserBalance).to.equal(initialUserBalance + compensation)
+      }
+
+      it('Should handle referrals correctly when trading seats', async function () {
+        await buySeatsWithReferral(
+          this.lunchbreakSeats,
+          10n,
+          buyer,
+          seller,
+          buyerReferral,
+          sellerReferral
+        )
+        await sellSeatsWithReferral(
+          this.lunchbreakSeats,
+          10n,
+          buyer,
+          seller,
+          buyerReferral,
+          sellerReferral
+        )
       })
     })
   })
