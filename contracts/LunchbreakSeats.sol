@@ -86,6 +86,8 @@ contract LunchbreakSeats is
 
   mapping(address => mapping(address => uint256)) public messagesEscrow;
 
+  mapping(address => uint256) public withdrawableBalances;
+
   // Events
 
   event SeatsBought(
@@ -191,6 +193,10 @@ contract LunchbreakSeats is
     return messagesEscrow[user][recipient];
   }
 
+  function withdrawableBalanceOf(address user) public view returns (uint256) {
+    return withdrawableBalances[user];
+  }
+
   // Seats logic
 
   function distributeFees(
@@ -202,18 +208,19 @@ contract LunchbreakSeats is
     uint256 userAReferrerFee = 0;
     if (referrals[userA] != address(0)) {
       userAReferrerFee = (totalFee * multiplier) / 5;
-      payable(referrals[userA]).transfer(userAReferrerFee);
+      withdrawableBalances[referrals[userA]] += userAReferrerFee;
       emit ReferralPaid(userA, referrals[userA], userAReferrerFee);
     }
     uint256 userBReferrerFee = 0;
     if (referrals[userB] != address(0)) {
       userBReferrerFee = (totalFee * multiplier) / 5;
-      payable(referrals[userB]).transfer(userBReferrerFee);
+      withdrawableBalances[referrals[userB]] += userBReferrerFee;
       emit ReferralPaid(userB, referrals[userB], userBReferrerFee);
     }
-    payable(feeRecipient).transfer(
-      totalFee - userAReferrerFee - userBReferrerFee
-    );
+    withdrawableBalances[feeRecipient] +=
+      totalFee -
+      userAReferrerFee -
+      userBReferrerFee;
   }
 
   function buySeats(address user, uint256 amount) public payable nonReentrant {
@@ -222,7 +229,7 @@ contract LunchbreakSeats is
     uint256 compensation = totalCost / compensationDivider;
     require(msg.value >= totalCost, "Insufficient ETH sent");
 
-    payable(user).transfer(compensation);
+    withdrawableBalances[user] += compensation;
     distributeFees(msg.sender, user, fee, 2);
 
     seats[user].balances[msg.sender] += amount;
@@ -250,7 +257,7 @@ contract LunchbreakSeats is
     returnAmount -= fee + compensation;
 
     payable(msg.sender).transfer(returnAmount);
-    payable(user).transfer(compensation);
+    withdrawableBalances[user] += compensation;
     distributeFees(msg.sender, user, fee, 2);
 
     seats[user].balances[msg.sender] -= amount;
@@ -278,7 +285,7 @@ contract LunchbreakSeats is
     require(amount > 0, "No ETH in escrow");
     messagesEscrow[user][recipient] = 0;
     uint256 fee = (amount * 2) / feeDivider;
-    payable(recipient).transfer(amount - fee);
+    withdrawableBalances[recipient] += amount - fee;
     distributeFees(user, recipient, fee, 1);
     emit EscrowWithdrawn(user, recipient, amount);
   }
@@ -292,6 +299,18 @@ contract LunchbreakSeats is
     messagesEscrow[user][recipient] = 0;
     payable(user).transfer(amount);
     emit EscrowReturned(user, recipient, amount);
+  }
+
+  // Withdrawing funds
+
+  function withdraw(uint256 amount) public nonReentrant {
+    require(amount > 0, "No ETH to withdraw");
+    require(
+      withdrawableBalances[msg.sender] >= amount,
+      "Insufficient withdrawable balance"
+    );
+    withdrawableBalances[msg.sender] -= amount;
+    payable(msg.sender).transfer(amount);
   }
 
   // Bonding curve math
