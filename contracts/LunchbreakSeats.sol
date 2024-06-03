@@ -256,7 +256,9 @@ contract LunchbreakSeats is
 
     returnAmount -= fee + compensation;
 
-    payable(msg.sender).transfer(returnAmount);
+    (bool sent, ) = payable(msg.sender).call{value: returnAmount}("");
+    require(sent, "Failed to send ETH");
+
     withdrawableBalances[user] += compensation;
     distributeFees(msg.sender, user, fee, 2);
 
@@ -297,7 +299,7 @@ contract LunchbreakSeats is
     uint256 amount = messagesEscrow[user][recipient];
     require(amount > 0, "No ETH in escrow");
     messagesEscrow[user][recipient] = 0;
-    payable(user).transfer(amount);
+    withdrawableBalances[user] += amount;
     emit EscrowReturned(user, recipient, amount);
   }
 
@@ -310,7 +312,8 @@ contract LunchbreakSeats is
       "Insufficient withdrawable balance"
     );
     withdrawableBalances[msg.sender] -= amount;
-    payable(msg.sender).transfer(amount);
+    (bool sent, ) = payable(msg.sender).call{value: amount}("");
+    require(sent, "Failed to send ETH");
   }
 
   // Bonding curve math
