@@ -84,9 +84,8 @@ contract LunchbreakSeats is
 
   mapping(address => address) public referrals;
 
-  mapping(address => mapping(address => mapping(uint256 => uint256)))
-    public messagesEscrows;
-  mapping(address => mapping(address => mapping(uint256 => bool)))
+  mapping(address => mapping(address => uint256[])) public messagesEscrows;
+  mapping(address => mapping(address => bool[]))
     public completedMessagesEscrows;
 
   mapping(address => uint256) public withdrawableBalances;
@@ -207,6 +206,21 @@ contract LunchbreakSeats is
 
   // Modifiers
 
+  modifier onlyExistingEscrow(
+    address user,
+    address recipient,
+    uint256 index
+  ) {
+    if (index > messagesEscrows[user][recipient].length) {
+      revert("Escrow does not exist");
+    }
+    if (index == messagesEscrows[user][recipient].length) {
+      messagesEscrows[user][recipient].push(0);
+      completedMessagesEscrows[user][recipient].push(false);
+    }
+    _;
+  }
+
   modifier onlyUncompletedEscrow(
     address user,
     address recipient,
@@ -216,15 +230,6 @@ contract LunchbreakSeats is
       !completedMessagesEscrows[user][recipient][index],
       "Escrow already completed"
     );
-    _;
-  }
-
-  modifier onlyNonemptyEscrow(
-    address user,
-    address recipient,
-    uint256 index
-  ) {
-    require(messagesEscrows[user][recipient][index] > 0, "No ETH in escrow");
     _;
   }
 
@@ -304,7 +309,13 @@ contract LunchbreakSeats is
     address user,
     address recipient,
     uint256 index
-  ) public payable nonReentrant onlyUncompletedEscrow(user, recipient, index) {
+  )
+    public
+    payable
+    nonReentrant
+    onlyExistingEscrow(user, recipient, index)
+    onlyUncompletedEscrow(user, recipient, index)
+  {
     uint256 amount = msg.value;
     require(amount > 0, "No ETH sent");
     messagesEscrows[user][recipient][index] += amount;
@@ -319,9 +330,10 @@ contract LunchbreakSeats is
     public
     nonReentrant
     onlyOwner
+    onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
-    onlyNonemptyEscrow(user, recipient, index)
   {
+    require(messagesEscrows[user][recipient][index] > 0, "No ETH in escrow");
     uint256 amount = messagesEscrows[user][recipient][index];
     messagesEscrows[user][recipient][index] = 0;
     uint256 fee = (amount * 2) / feeDivider;
@@ -339,9 +351,10 @@ contract LunchbreakSeats is
     public
     nonReentrant
     onlyOwner
+    onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
-    onlyNonemptyEscrow(user, recipient, index)
   {
+    require(messagesEscrows[user][recipient][index] > 0, "No ETH in escrow");
     uint256 amount = messagesEscrows[user][recipient][index];
     messagesEscrows[user][recipient][index] = 0;
     withdrawableBalances[user] += amount;
