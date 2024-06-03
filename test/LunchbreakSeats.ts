@@ -230,10 +230,12 @@ describe('LunchbreakSeats contract tests', () => {
       ) {
         // Get initial balances
         const initialBuyerBalance = await ethers.provider.getBalance(buyer)
-        const initialSellerBalance = await ethers.provider.getBalance(seller)
-        const initialFeeRecipientBalance = await ethers.provider.getBalance(
-          await lunchbreakSeats.feeRecipient()
-        )
+        const initialSellerWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(seller)
+        const initialFeeWithdrawableRecipientBalance =
+          await lunchbreakSeats.withdrawableBalances(
+            await lunchbreakSeats.feeRecipient()
+          )
         const initialSeatBalance = await lunchbreakSeats.balanceOf(
           seller.address,
           buyer.address
@@ -265,17 +267,21 @@ describe('LunchbreakSeats contract tests', () => {
         ).to.equal(initialSeatBalance + amountToBuy)
         // Check ETH balances to verify correct fee and compensation distribution
         const finalBuyerBalance = await ethers.provider.getBalance(buyer)
-        const finalSellerBalance = await ethers.provider.getBalance(seller)
-        const finalFeeRecipientBalance = await ethers.provider.getBalance(
-          await lunchbreakSeats.feeRecipient()
-        )
+        const finalSellerWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(seller)
+        const finalFeeRecipientWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(
+            await lunchbreakSeats.feeRecipient()
+          )
         // Assertions to check the correctness of the fee and compensation distribution
         expect(finalBuyerBalance).to.equal(
           initialBuyerBalance - totalCost - gasUsed
         )
-        expect(finalSellerBalance).to.equal(initialSellerBalance + compensation)
-        expect(finalFeeRecipientBalance).to.equal(
-          initialFeeRecipientBalance + fee
+        expect(finalSellerWithdrawableBalance).to.equal(
+          initialSellerWithdrawableBalance + compensation
+        )
+        expect(finalFeeRecipientWithdrawableBalance).to.equal(
+          initialFeeWithdrawableRecipientBalance + fee
         )
       }
 
@@ -287,10 +293,12 @@ describe('LunchbreakSeats contract tests', () => {
       ) {
         // Get initial balances
         const initialHolderBalance = await ethers.provider.getBalance(holder)
-        const initialUserBalance = await ethers.provider.getBalance(user)
-        const initialFeeRecipientBalance = await ethers.provider.getBalance(
-          await lunchbreakSeats.feeRecipient()
-        )
+        const initialUserWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(user)
+        const initialFeeRecipientWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(
+            await lunchbreakSeats.feeRecipient()
+          )
         const initialSeatBalance = await lunchbreakSeats.balanceOf(
           user.address,
           holder.address
@@ -326,10 +334,12 @@ describe('LunchbreakSeats contract tests', () => {
         ).to.equal(initialSeatBalance - amountToSell)
         // Check ETH balances to verify correct fee and compensation distribution
         const finalHolderBalance = await ethers.provider.getBalance(holder)
-        const finalUserBalance = await ethers.provider.getBalance(user)
-        const finalFeeRecipientBalance = await ethers.provider.getBalance(
-          await lunchbreakSeats.feeRecipient()
-        )
+        const finalUserWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(user)
+        const finalFeeRecipientWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(
+            await lunchbreakSeats.feeRecipient()
+          )
         // Assertions to check the correctness of the fee and compensation distribution
         expect(finalHolderBalance).to.equal(
           initialHolderBalance +
@@ -337,9 +347,11 @@ describe('LunchbreakSeats contract tests', () => {
             (fee + compensation + initialFee + initialCompensation) -
             gasUsed
         )
-        expect(finalUserBalance).to.equal(initialUserBalance + compensation)
-        expect(finalFeeRecipientBalance).to.equal(
-          initialFeeRecipientBalance + fee
+        expect(finalUserWithdrawableBalance).to.equal(
+          initialUserWithdrawableBalance + compensation
+        )
+        expect(finalFeeRecipientWithdrawableBalance).to.equal(
+          initialFeeRecipientWithdrawableBalance + fee
         )
       }
 
@@ -402,18 +414,14 @@ describe('LunchbreakSeats contract tests', () => {
         const initialBuyerBalance = await ethers.provider.getBalance(
           buyer.address
         )
-        const initialSellerBalance = await ethers.provider.getBalance(
-          seller.address
-        )
-        const initialBuyerReferralBalance = await ethers.provider.getBalance(
-          buyerReferral.address
-        )
-        const initialSellerReferralBalance = await ethers.provider.getBalance(
-          sellerReferral.address
-        )
-        const initialFeeRecipientBalance = await ethers.provider.getBalance(
-          feeRecipient.address
-        )
+        const initialSellerWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(seller.address)
+        const initialBuyerReferralWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(buyerReferral.address)
+        const initialSellerReferralWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(sellerReferral.address)
+        const initialFeeRecipientWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(feeRecipient.address)
 
         // Get total cost
         const supply: bigint = await lunchbreakSeats.supplyOf(seller.address)
@@ -440,32 +448,30 @@ describe('LunchbreakSeats contract tests', () => {
         const finalBuyerBalance = await ethers.provider.getBalance(
           buyer.address
         )
-        const finalSellerBalance = await ethers.provider.getBalance(
-          seller.address
-        )
-        const finalBuyerReferralBalance = await ethers.provider.getBalance(
-          buyerReferral.address
-        )
-        const finalSellerReferralBalance = await ethers.provider.getBalance(
-          sellerReferral.address
-        )
-        const finalFeeRecipientBalance = await ethers.provider.getBalance(
-          feeRecipient.address
-        )
+        const finalSellerWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(seller.address)
+        const finalBuyerReferralWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(buyerReferral.address)
+        const finalSellerReferralWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(sellerReferral.address)
+        const finalFeeRecipientWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(feeRecipient.address)
 
-        expect(finalBuyerReferralBalance).to.equal(
-          initialBuyerReferralBalance + referralFee
+        expect(finalBuyerReferralWithdrawableBalance).to.equal(
+          initialBuyerReferralWithdrawableBalance + referralFee
         )
-        expect(finalSellerReferralBalance).to.equal(
-          initialSellerReferralBalance + referralFee
+        expect(finalSellerReferralWithdrawableBalance).to.equal(
+          initialSellerReferralWithdrawableBalance + referralFee
         )
-        expect(finalFeeRecipientBalance).to.equal(
-          initialFeeRecipientBalance + fee - 2n * referralFee
+        expect(finalFeeRecipientWithdrawableBalance).to.equal(
+          initialFeeRecipientWithdrawableBalance + fee - 2n * referralFee
         )
         expect(finalBuyerBalance).to.equal(
           initialBuyerBalance - totalCost - gasUsed
         )
-        expect(finalSellerBalance).to.equal(initialSellerBalance + compensation)
+        expect(finalSellerWithdrawableBalance).to.equal(
+          initialSellerWithdrawableBalance + compensation
+        )
       }
 
       async function sellSeatsWithReferral(
@@ -480,18 +486,14 @@ describe('LunchbreakSeats contract tests', () => {
         const initialHolderBalance = await ethers.provider.getBalance(
           holder.address
         )
-        const initialUserBalance = await ethers.provider.getBalance(
-          user.address
-        )
-        const initialHolderReferralBalance = await ethers.provider.getBalance(
-          holderReferral.address
-        )
-        const initialUserReferralBalance = await ethers.provider.getBalance(
-          userReferral.address
-        )
-        const initialFeeRecipientBalance = await ethers.provider.getBalance(
-          feeRecipient.address
-        )
+        const initialUserWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(user.address)
+        const initialHolderReferralWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(holderReferral.address)
+        const initialUserReferralWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(userReferral.address)
+        const initialFeeRecipientWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(feeRecipient.address)
 
         // Get total return amount
         const supply: bigint = await lunchbreakSeats.supplyOf(user.address)
@@ -523,30 +525,30 @@ describe('LunchbreakSeats contract tests', () => {
         const finalHolderBalance = await ethers.provider.getBalance(
           holder.address
         )
-        const finalUserBalance = await ethers.provider.getBalance(user.address)
-        const finalHolderReferralBalance = await ethers.provider.getBalance(
-          holderReferral.address
-        )
-        const finalUserReferralBalance = await ethers.provider.getBalance(
-          userReferral.address
-        )
-        const finalFeeRecipientBalance = await ethers.provider.getBalance(
-          feeRecipient.address
-        )
+        const finalUserWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(user.address)
+        const finalHolderReferralWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(holderReferral.address)
+        const finalUserReferralWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(userReferral.address)
+        const finalFeeRecipientWithdrawableBalance =
+          await lunchbreakSeats.withdrawableBalances(feeRecipient.address)
 
-        expect(finalHolderReferralBalance).to.equal(
-          initialHolderReferralBalance + referralFee
+        expect(finalHolderReferralWithdrawableBalance).to.equal(
+          initialHolderReferralWithdrawableBalance + referralFee
         )
-        expect(finalUserReferralBalance).to.equal(
-          initialUserReferralBalance + referralFee
+        expect(finalUserReferralWithdrawableBalance).to.equal(
+          initialUserReferralWithdrawableBalance + referralFee
         )
-        expect(finalFeeRecipientBalance).to.equal(
-          initialFeeRecipientBalance + fee - 2n * referralFee
+        expect(finalFeeRecipientWithdrawableBalance).to.equal(
+          initialFeeRecipientWithdrawableBalance + fee - 2n * referralFee
         )
         expect(finalHolderBalance).to.equal(
           initialHolderBalance + totalReturn - fee - compensation - gasUsed
         )
-        expect(finalUserBalance).to.equal(initialUserBalance + compensation)
+        expect(finalUserWithdrawableBalance).to.equal(
+          initialUserWithdrawableBalance + compensation
+        )
       }
 
       it('Should handle referrals correctly when trading seats', async function () {
@@ -604,7 +606,7 @@ describe('LunchbreakSeats contract tests', () => {
         const depositAmount = ethers.parseEther('1.0')
         const transactionResponse = await this.lunchbreakSeats
           .connect(user)
-          .fundEscrow(user.address, recipient.address, {
+          .fundEscrow(user.address, recipient.address, 0, {
             value: depositAmount,
           })
 
@@ -620,7 +622,8 @@ describe('LunchbreakSeats contract tests', () => {
 
         const escrowBalance = await this.lunchbreakSeats.escrowOf(
           user.address,
-          recipient.address
+          recipient.address,
+          0
         )
 
         const gasUsed = BigInt(receipt.gasUsed * receipt.gasPrice)
@@ -637,44 +640,66 @@ describe('LunchbreakSeats contract tests', () => {
 
         await this.lunchbreakSeats
           .connect(user)
-          .fundEscrow(user.address, recipient.address, { value: firstDeposit })
+          .fundEscrow(user.address, recipient.address, 0, {
+            value: firstDeposit,
+          })
         await this.lunchbreakSeats
           .connect(user)
-          .fundEscrow(user.address, recipient.address, { value: secondDeposit })
+          .fundEscrow(user.address, recipient.address, 0, {
+            value: secondDeposit,
+          })
 
         const totalDeposit = firstDeposit + secondDeposit
         expect(
-          await this.lunchbreakSeats.escrowOf(user.address, recipient.address)
+          await this.lunchbreakSeats.escrowOf(
+            user.address,
+            recipient.address,
+            0
+          )
         ).to.equal(totalDeposit)
       })
     })
 
     describe('Withdraw Escrow', function () {
       it('should allow the owner to withdraw funds from escrow', async function () {
-        const initialFeeRecipientBalance = await ethers.provider.getBalance(
-          await this.lunchbreakSeats.feeRecipient()
-        )
+        const initialFeeRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(
+            await this.lunchbreakSeats.feeRecipient()
+          )
+        const initialRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(recipient.address)
 
         const depositAmount = ethers.parseEther('1.0')
         await this.lunchbreakSeats
           .connect(user)
-          .fundEscrow(user.address, recipient.address, { value: depositAmount })
+          .fundEscrow(user.address, recipient.address, 0, {
+            value: depositAmount,
+          })
 
-        await expect(() =>
-          this.lunchbreakSeats
-            .connect(owner)
-            .withdrawEscrow(user.address, recipient.address)
-        ).to.changeEtherBalances([recipient], [(depositAmount * 9n) / 10n])
+        await this.lunchbreakSeats
+          .connect(owner)
+          .withdrawEscrow(user.address, recipient.address, 0)
 
-        const finalFeeRecipientBalance = await ethers.provider.getBalance(
-          await this.lunchbreakSeats.feeRecipient()
-        )
+        const finalFeeRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(
+            await this.lunchbreakSeats.feeRecipient()
+          )
+
+        const finalRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(recipient.address)
 
         expect(
-          await this.lunchbreakSeats.escrowOf(user.address, recipient.address)
+          await this.lunchbreakSeats.escrowOf(
+            user.address,
+            recipient.address,
+            0
+          )
         ).to.equal(0)
-        expect(finalFeeRecipientBalance).to.equal(
-          initialFeeRecipientBalance + depositAmount / 10n
+        expect(finalFeeRecipientWithdrawableBalance).to.equal(
+          initialFeeRecipientWithdrawableBalance + depositAmount / 10n
+        )
+        expect(finalRecipientWithdrawableBalance).to.equal(
+          initialRecipientWithdrawableBalance + (depositAmount * 9n) / 10n
         )
       })
 
@@ -682,7 +707,7 @@ describe('LunchbreakSeats contract tests', () => {
         await expect(
           this.lunchbreakSeats
             .connect(owner)
-            .withdrawEscrow(user.address, recipient.address)
+            .withdrawEscrow(user.address, recipient.address, 0)
         ).to.be.revertedWith('No ETH in escrow')
       })
     })
@@ -692,16 +717,30 @@ describe('LunchbreakSeats contract tests', () => {
         const depositAmount = ethers.parseEther('1.0')
         await this.lunchbreakSeats
           .connect(user)
-          .fundEscrow(user.address, recipient.address, { value: depositAmount })
+          .fundEscrow(user.address, recipient.address, 0, {
+            value: depositAmount,
+          })
 
-        await expect(() =>
-          this.lunchbreakSeats
-            .connect(owner)
-            .returnEscrow(user.address, recipient.address)
-        ).to.changeEtherBalances([user], [depositAmount])
+        const initialUserWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(user.address)
+
+        await this.lunchbreakSeats
+          .connect(owner)
+          .returnEscrow(user.address, recipient.address, 0)
+
+        const finalUserWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(user.address)
+
+        expect(finalUserWithdrawableBalance).to.equal(
+          initialUserWithdrawableBalance + depositAmount
+        )
 
         expect(
-          await this.lunchbreakSeats.escrowOf(user.address, recipient.address)
+          await this.lunchbreakSeats.escrowOf(
+            user.address,
+            recipient.address,
+            0
+          )
         ).to.equal(0)
       })
     })
@@ -725,20 +764,18 @@ describe('LunchbreakSeats contract tests', () => {
         const initialUserBalance = await ethers.provider.getBalance(
           user.address
         )
-        const initialRecipientBalance = await ethers.provider.getBalance(
-          recipient.address
-        )
+        const initialRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(recipient.address)
         const depositAmount = ethers.parseEther('1.0')
         const transactionResponse = await this.lunchbreakSeats
           .connect(user)
-          .fundEscrow(user.address, recipient.address, {
+          .fundEscrow(user.address, recipient.address, 0, {
             value: depositAmount,
           })
 
         const finalUserBalance = await ethers.provider.getBalance(user.address)
-        const finalRecipientBalance = await ethers.provider.getBalance(
-          recipient.address
-        )
+        const finalRecipientBalance =
+          await this.lunchbreakSeats.withdrawableBalances(recipient.address)
 
         const receipt = await transactionResponse.wait()
         if (!receipt) {
@@ -747,7 +784,8 @@ describe('LunchbreakSeats contract tests', () => {
 
         const escrowBalance = await this.lunchbreakSeats.escrowOf(
           user.address,
-          recipient.address
+          recipient.address,
+          0
         )
 
         const gasUsed = BigInt(receipt.gasUsed * receipt.gasPrice)
@@ -755,31 +793,36 @@ describe('LunchbreakSeats contract tests', () => {
         expect(finalUserBalance).to.equal(
           initialUserBalance - depositAmount - gasUsed
         )
-        expect(finalRecipientBalance).to.equal(initialRecipientBalance)
+        expect(finalRecipientBalance).to.equal(
+          initialRecipientWithdrawableBalance
+        )
       })
     })
 
     describe('Withdraw Escrow with Referral', function () {
       it('should distribute referral fees on withdrawal', async function () {
-        const initialRecipientBalance = await ethers.provider.getBalance(
-          recipient.address
-        )
+        const initialRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(recipient.address)
         const initialUserBalance = await ethers.provider.getBalance(
           user.address
         )
-        const initialFeeRecipientBalance = await ethers.provider.getBalance(
-          await this.lunchbreakSeats.feeRecipient()
-        )
-        const initialUserReferralBalance = await ethers.provider.getBalance(
-          referrerUser.address
-        )
-        const initialRecipientReferralBalance =
-          await ethers.provider.getBalance(referrerRecipient.address)
+        const initialFeeRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(
+            await this.lunchbreakSeats.feeRecipient()
+          )
+        const initialUserReferralWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(referrerUser.address)
+        const initialRecipientReferralWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(
+            referrerRecipient.address
+          )
 
         const depositAmount = ethers.parseEther('1.0')
         const depositTxResponse = await this.lunchbreakSeats
           .connect(user)
-          .fundEscrow(user.address, recipient.address, { value: depositAmount })
+          .fundEscrow(user.address, recipient.address, 0, {
+            value: depositAmount,
+          })
         const depositTxReceipt = await depositTxResponse.wait()
         const depositGas = BigInt(
           depositTxReceipt.gasUsed * depositTxReceipt.gasPrice
@@ -787,28 +830,28 @@ describe('LunchbreakSeats contract tests', () => {
 
         await this.lunchbreakSeats
           .connect(owner)
-          .withdrawEscrow(user.address, recipient.address)
+          .withdrawEscrow(user.address, recipient.address, 0)
 
         const feeRecipientFee = (depositAmount * 6n) / 100n
         const userReferrerFee = (depositAmount * 2n) / 100n
         const recipientReferrerFee = (depositAmount * 2n) / 100n
 
-        const finalRecipientBalance = await ethers.provider.getBalance(
-          recipient.address
-        )
+        const finalRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(recipient.address)
         const finalUserBalance = await ethers.provider.getBalance(user.address)
-        const finalFeeRecipientBalance = await ethers.provider.getBalance(
-          await this.lunchbreakSeats.feeRecipient()
-        )
-        const finalUserReferralBalance = await ethers.provider.getBalance(
-          referrerUser.address
-        )
-        const finalRecipientReferralBalance = await ethers.provider.getBalance(
-          referrerRecipient.address
-        )
+        const finalFeeRecipientWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(
+            await this.lunchbreakSeats.feeRecipient()
+          )
+        const finalUserReferralWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(referrerUser.address)
+        const finalRecipientReferralWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(
+            referrerRecipient.address
+          )
 
-        expect(finalRecipientBalance).to.equal(
-          initialRecipientBalance +
+        expect(finalRecipientWithdrawableBalance).to.equal(
+          initialRecipientWithdrawableBalance +
             depositAmount -
             feeRecipientFee -
             userReferrerFee -
@@ -817,14 +860,14 @@ describe('LunchbreakSeats contract tests', () => {
         expect(finalUserBalance).to.equal(
           initialUserBalance - depositAmount - depositGas
         )
-        expect(finalFeeRecipientBalance).to.equal(
-          initialFeeRecipientBalance + feeRecipientFee
+        expect(finalFeeRecipientWithdrawableBalance).to.equal(
+          initialFeeRecipientWithdrawableBalance + feeRecipientFee
         )
-        expect(finalUserReferralBalance).to.equal(
-          initialUserReferralBalance + userReferrerFee
+        expect(finalUserReferralWithdrawableBalance).to.equal(
+          initialUserReferralWithdrawableBalance + userReferrerFee
         )
-        expect(finalRecipientReferralBalance).to.equal(
-          initialRecipientReferralBalance + recipientReferrerFee
+        expect(finalRecipientReferralWithdrawableBalance).to.equal(
+          initialRecipientReferralWithdrawableBalance + recipientReferrerFee
         )
       })
     })
@@ -834,16 +877,30 @@ describe('LunchbreakSeats contract tests', () => {
         const depositAmount = ethers.parseEther('1.0')
         await this.lunchbreakSeats
           .connect(user)
-          .fundEscrow(user.address, recipient.address, { value: depositAmount })
+          .fundEscrow(user.address, recipient.address, 0, {
+            value: depositAmount,
+          })
 
-        await expect(() =>
-          this.lunchbreakSeats
-            .connect(owner)
-            .returnEscrow(user.address, recipient.address)
-        ).to.changeEtherBalances([user], [depositAmount])
+        const initialUserWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(user.address)
+
+        await this.lunchbreakSeats
+          .connect(owner)
+          .returnEscrow(user.address, recipient.address, 0)
+
+        const finalUserWithdrawableBalance =
+          await this.lunchbreakSeats.withdrawableBalances(user.address)
+
+        expect(finalUserWithdrawableBalance).to.equal(
+          initialUserWithdrawableBalance + depositAmount
+        )
 
         expect(
-          await this.lunchbreakSeats.escrowOf(user.address, recipient.address)
+          await this.lunchbreakSeats.escrowOf(
+            user.address,
+            recipient.address,
+            0
+          )
         ).to.equal(0)
       })
     })

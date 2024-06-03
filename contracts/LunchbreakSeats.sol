@@ -84,7 +84,10 @@ contract LunchbreakSeats is
 
   mapping(address => address) public referrals;
 
-  mapping(address => mapping(address => uint256)) public messagesEscrow;
+  mapping(address => mapping(address => mapping(uint256 => uint256)))
+    public messagesEscrows;
+  mapping(address => mapping(address => mapping(uint256 => bool)))
+    public completedMessagesEscrows;
 
   mapping(address => uint256) public withdrawableBalances;
 
@@ -113,18 +116,22 @@ contract LunchbreakSeats is
   event EscrowFunded(
     address indexed user,
     address indexed recipient,
+    uint256 indexed index,
     uint256 amount
   );
   event EscrowWithdrawn(
     address indexed user,
     address indexed recipient,
+    uint256 indexed index,
     uint256 amount
   );
   event EscrowReturned(
     address indexed user,
     address indexed recipient,
+    uint256 indexed index,
     uint256 amount
   );
+  event FundsWithdrawn(address indexed user, uint256 amount);
 
   // Initializer
 
@@ -188,13 +195,37 @@ contract LunchbreakSeats is
 
   function escrowOf(
     address user,
-    address recipient
+    address recipient,
+    uint256 index
   ) public view returns (uint256) {
-    return messagesEscrow[user][recipient];
+    return messagesEscrows[user][recipient][index];
   }
 
   function withdrawableBalanceOf(address user) public view returns (uint256) {
     return withdrawableBalances[user];
+  }
+
+  // Modifiers
+
+  modifier onlyUncompletedEscrow(
+    address user,
+    address recipient,
+    uint256 index
+  ) {
+    require(
+      !completedMessagesEscrows[user][recipient][index],
+      "Escrow already completed"
+    );
+    _;
+  }
+
+  modifier onlyNonemptyEscrow(
+    address user,
+    address recipient,
+    uint256 index
+  ) {
+    require(messagesEscrows[user][recipient][index] > 0, "No ETH in escrow");
+    _;
   }
 
   // Seats logic
@@ -271,36 +302,51 @@ contract LunchbreakSeats is
 
   function fundEscrow(
     address user,
-    address recipient
-  ) public payable nonReentrant {
+    address recipient,
+    uint256 index
+  ) public payable nonReentrant onlyUncompletedEscrow(user, recipient, index) {
     uint256 amount = msg.value;
     require(amount > 0, "No ETH sent");
-    messagesEscrow[user][recipient] += amount;
-    emit EscrowFunded(user, recipient, amount);
+    messagesEscrows[user][recipient][index] += amount;
+    emit EscrowFunded(user, recipient, index, amount);
   }
 
   function withdrawEscrow(
     address user,
-    address recipient
-  ) public nonReentrant onlyOwner {
-    uint256 amount = messagesEscrow[user][recipient];
-    require(amount > 0, "No ETH in escrow");
-    messagesEscrow[user][recipient] = 0;
+    address recipient,
+    uint256 index
+  )
+    public
+    nonReentrant
+    onlyOwner
+    onlyUncompletedEscrow(user, recipient, index)
+    onlyNonemptyEscrow(user, recipient, index)
+  {
+    uint256 amount = messagesEscrows[user][recipient][index];
+    messagesEscrows[user][recipient][index] = 0;
     uint256 fee = (amount * 2) / feeDivider;
     withdrawableBalances[recipient] += amount - fee;
     distributeFees(user, recipient, fee, 1);
-    emit EscrowWithdrawn(user, recipient, amount);
+    completedMessagesEscrows[user][recipient][index] = true;
+    emit EscrowWithdrawn(user, recipient, index, amount);
   }
 
   function returnEscrow(
     address user,
-    address recipient
-  ) public nonReentrant onlyOwner {
-    uint256 amount = messagesEscrow[user][recipient];
-    require(amount > 0, "No ETH in escrow");
-    messagesEscrow[user][recipient] = 0;
+    address recipient,
+    uint256 index
+  )
+    public
+    nonReentrant
+    onlyOwner
+    onlyUncompletedEscrow(user, recipient, index)
+    onlyNonemptyEscrow(user, recipient, index)
+  {
+    uint256 amount = messagesEscrows[user][recipient][index];
+    messagesEscrows[user][recipient][index] = 0;
     withdrawableBalances[user] += amount;
-    emit EscrowReturned(user, recipient, amount);
+    completedMessagesEscrows[user][recipient][index] = true;
+    emit EscrowReturned(user, recipient, index, amount);
   }
 
   // Withdrawing funds
@@ -314,6 +360,7 @@ contract LunchbreakSeats is
     withdrawableBalances[msg.sender] -= amount;
     (bool sent, ) = payable(msg.sender).call{value: amount}("");
     require(sent, "Failed to send ETH");
+    emit FundsWithdrawn(msg.sender, amount);
   }
 
   // Bonding curve math
