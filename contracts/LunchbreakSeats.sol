@@ -98,6 +98,31 @@ contract LunchbreakSeats is
 
   mapping(address => uint256) public withdrawableBalances;
 
+  // Errors
+
+  error EscrowAlreadyCompleted(address user, address recipient, uint256 index);
+  error InsufficientETHSent(uint256 amountSent, uint256 amountRequired);
+  error ReturningExtraETHFailed(
+    address user,
+    uint256 seatsAmountToBuy,
+    uint256 totalCost,
+    uint256 extraAmount
+  );
+  error InsufficientSeatsToSell(uint256 amountToSell, uint256 userBalance);
+  error InsufficientReturnAmount(
+    uint256 returnAmount,
+    uint256 minSellReturnAmount
+  );
+  error SendingSellReturnFailed(
+    address user,
+    uint256 returnAmount,
+    uint256 totalCost
+  );
+  error NoETHSentToFundEscrow(address user, address recipient, uint256 index);
+  error NoETHInEscrow(address user, address recipient, uint256 index);
+  error InsufficientWithdrawableBalance(uint256 amount, uint256 requiredAmount);
+  error FailedToWithdrawETH(address user, uint256 amount);
+
   // Events
 
   event SeatsBought(
@@ -234,10 +259,9 @@ contract LunchbreakSeats is
     address recipient,
     uint256 index
   ) {
-    require(
-      !completedMessagesEscrows[user][recipient][index],
-      "Escrow already completed"
-    );
+    if (completedMessagesEscrows[user][recipient][index]) {
+      revert EscrowAlreadyCompleted(user, recipient, index);
+    }
     _;
   }
 
@@ -300,7 +324,9 @@ contract LunchbreakSeats is
     );
     uint256 fee = totalCost / userSeatParameters.feeDivider;
     uint256 compensation = totalCost / userSeatParameters.compensationDivider;
-    require(msg.value >= totalCost, "Insufficient ETH sent");
+    if (msg.value < totalCost) {
+      revert InsufficientETHSent(msg.value, totalCost);
+    }
 
     withdrawableBalances[user] += compensation;
     distributeFees(msg.sender, user, fee, 2);
@@ -313,7 +339,14 @@ contract LunchbreakSeats is
       (bool sent, ) = payable(msg.sender).call{value: msg.value - totalCost}(
         ""
       );
-      require(sent, "Failed to send ETH");
+      if (!sent) {
+        revert ReturningExtraETHFailed(
+          user,
+          amount,
+          totalCost,
+          msg.value - totalCost
+        );
+      }
     }
   }
 
@@ -327,10 +360,9 @@ contract LunchbreakSeats is
     nonZeroAmount(amount)
     nonZeroAmount(minSellReturnAmount)
   {
-    require(
-      seats[user].balances[msg.sender] >= amount,
-      "Not enough seats to sell"
-    );
+    if (amount > seats[user].balances[msg.sender]) {
+      revert InsufficientSeatsToSell(amount, seats[user].balances[msg.sender]);
+    }
 
     SeatParameters memory userSeatParameters = getCurveParameters(user);
 
@@ -340,7 +372,9 @@ contract LunchbreakSeats is
       userSeatParameters.curveFactor,
       userSeatParameters.initialPrice
     );
-    require(returnAmount >= minSellReturnAmount, "Insufficient return amount");
+    if (returnAmount < minSellReturnAmount) {
+      revert InsufficientReturnAmount(returnAmount, minSellReturnAmount);
+    }
     uint256 initialFee = returnAmount / userSeatParameters.feeDivider;
     uint256 initialCompensation = returnAmount /
       userSeatParameters.compensationDivider;
@@ -353,7 +387,9 @@ contract LunchbreakSeats is
     returnAmount -= fee + compensation;
 
     (bool sent, ) = payable(msg.sender).call{value: returnAmount}("");
-    require(sent, "Failed to send ETH");
+    if (!sent) {
+      revert SendingSellReturnFailed(user, amount, returnAmount);
+    }
 
     withdrawableBalances[user] += compensation;
     distributeFees(msg.sender, user, fee, 2);
@@ -377,7 +413,9 @@ contract LunchbreakSeats is
     onlyUncompletedEscrow(user, recipient, index)
   {
     uint256 amount = msg.value;
-    require(amount > 0, "No ETH sent");
+    if (amount <= 0) {
+      revert NoETHSentToFundEscrow(user, recipient, index);
+    }
     messagesEscrows[user][recipient][index] += amount;
     emit EscrowFunded(user, recipient, index, amount);
   }
@@ -393,7 +431,9 @@ contract LunchbreakSeats is
     onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
   {
-    require(messagesEscrows[user][recipient][index] > 0, "No ETH in escrow");
+    if (messagesEscrows[user][recipient][index] <= 0) {
+      revert NoETHInEscrow(user, recipient, index);
+    }
     uint256 amount = messagesEscrows[user][recipient][index];
     messagesEscrows[user][recipient][index] = 0;
     uint256 fee = (amount * 2) / feeDivider;
@@ -414,7 +454,9 @@ contract LunchbreakSeats is
     onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
   {
-    require(messagesEscrows[user][recipient][index] > 0, "No ETH in escrow");
+    if (messagesEscrows[user][recipient][index] <= 0) {
+      revert NoETHInEscrow(user, recipient, index);
+    }
     uint256 amount = messagesEscrows[user][recipient][index];
     messagesEscrows[user][recipient][index] = 0;
     withdrawableBalances[user] += amount;
@@ -426,13 +468,17 @@ contract LunchbreakSeats is
 
   function withdraw(uint256 amount) public nonReentrant {
     require(amount > 0, "No ETH to withdraw");
-    require(
-      withdrawableBalances[msg.sender] >= amount,
-      "Insufficient withdrawable balance"
-    );
+    if (withdrawableBalances[msg.sender] < amount) {
+      revert InsufficientWithdrawableBalance(
+        amount,
+        withdrawableBalances[msg.sender]
+      );
+    }
     withdrawableBalances[msg.sender] -= amount;
     (bool sent, ) = payable(msg.sender).call{value: amount}("");
-    require(sent, "Failed to send ETH");
+    if (!sent) {
+      revert FailedToWithdrawETH(msg.sender, amount);
+    }
     emit FundsWithdrawn(msg.sender, amount);
   }
 

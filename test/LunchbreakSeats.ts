@@ -383,10 +383,16 @@ describe('LunchbreakSeats contract tests', () => {
         await buySeats(this.lunchbreakSeats, 10n, buyer2, seller)
         await expect(
           sellSeats(this.lunchbreakSeats, 36n, buyer, seller)
-        ).to.be.revertedWith('Not enough seats to sell')
+        ).to.be.revertedWithCustomError(
+          this.lunchbreakSeats,
+          'InsufficientSeatsToSell'
+        )
         await expect(
           sellSeats(this.lunchbreakSeats, 26n, buyer2, seller)
-        ).to.be.revertedWith('Not enough seats to sell')
+        ).to.be.revertedWithCustomError(
+          this.lunchbreakSeats,
+          'InsufficientSeatsToSell'
+        )
       })
     })
 
@@ -718,7 +724,7 @@ describe('LunchbreakSeats contract tests', () => {
           this.lunchbreakSeats
             .connect(owner)
             .withdrawEscrow(user.address, recipient.address, 0)
-        ).to.be.revertedWith('No ETH in escrow')
+        ).to.be.revertedWithCustomError(this.lunchbreakSeats, 'NoETHInEscrow')
       })
     })
 
