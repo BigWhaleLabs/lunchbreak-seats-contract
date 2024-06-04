@@ -205,7 +205,9 @@ describe('LunchbreakSeats contract tests', () => {
         for (const [startToken, amount] of cases) {
           const totalCost = await this.lunchbreakSeats.calculateTotalCost(
             startToken,
-            amount
+            amount,
+            await this.lunchbreakSeats.curveFactor(),
+            await this.lunchbreakSeats.initialPrice()
           )
           const totalCostJS = calculateTotalCost(startToken, amount)
           expect(totalCostJS).to.equal(totalCost)
@@ -245,7 +247,9 @@ describe('LunchbreakSeats contract tests', () => {
         const supply = await lunchbreakSeats.supplyOf(seller.address)
         const totalCost = await lunchbreakSeats.calculateTotalCost(
           supply,
-          amountToBuy
+          amountToBuy,
+          await lunchbreakSeats.curveFactor(),
+          await lunchbreakSeats.initialPrice()
         )
         // Get fees
         const fee = totalCost / (await lunchbreakSeats.feeDivider())
@@ -308,7 +312,9 @@ describe('LunchbreakSeats contract tests', () => {
         const supply = await lunchbreakSeats.supplyOf(user.address)
         const totalCost = await lunchbreakSeats.calculateTotalCost(
           supply - amountToSell,
-          amountToSell
+          amountToSell,
+          await lunchbreakSeats.curveFactor(),
+          await lunchbreakSeats.initialPrice()
         )
         // Get fees
         const initialFee = totalCost / (await lunchbreakSeats.feeDivider())
@@ -427,7 +433,9 @@ describe('LunchbreakSeats contract tests', () => {
         const supply: bigint = await lunchbreakSeats.supplyOf(seller.address)
         const totalCost: bigint = await lunchbreakSeats.calculateTotalCost(
           supply,
-          amountToBuy
+          amountToBuy,
+          await lunchbreakSeats.curveFactor(),
+          await lunchbreakSeats.initialPrice()
         )
         const fee = totalCost / (await lunchbreakSeats.feeDivider())
         const referralFee = (fee * 2n) / 5n
@@ -499,7 +507,9 @@ describe('LunchbreakSeats contract tests', () => {
         const supply: bigint = await lunchbreakSeats.supplyOf(user.address)
         let totalReturn: bigint = await lunchbreakSeats.calculateTotalCost(
           supply - amountToSell,
-          amountToSell
+          amountToSell,
+          await lunchbreakSeats.curveFactor(),
+          await lunchbreakSeats.initialPrice()
         )
         const initialFee = totalReturn / (await lunchbreakSeats.feeDivider())
         const initialCompensation =
