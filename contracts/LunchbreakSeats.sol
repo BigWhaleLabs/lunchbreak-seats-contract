@@ -241,6 +241,11 @@ contract LunchbreakSeats is
     _;
   }
 
+  modifier nonZeroAmount(uint256 amount) {
+    require(amount > 0, "Amount must be greater than 0");
+    _;
+  }
+
   // Seats logic
 
   function getCurveParameters(
@@ -281,7 +286,10 @@ contract LunchbreakSeats is
       userBReferrerFee;
   }
 
-  function buySeats(address user, uint256 amount) public payable nonReentrant {
+  function buySeats(
+    address user,
+    uint256 amount
+  ) public payable nonReentrant nonZeroAmount(amount) {
     SeatParameters memory userSeatParameters = getCurveParameters(user);
 
     uint256 totalCost = calculateTotalCost(
@@ -313,7 +321,12 @@ contract LunchbreakSeats is
     address user,
     uint256 amount,
     uint256 minSellReturnAmount
-  ) public nonReentrant {
+  )
+    public
+    nonReentrant
+    nonZeroAmount(amount)
+    nonZeroAmount(minSellReturnAmount)
+  {
     require(
       seats[user].balances[msg.sender] >= amount,
       "Not enough seats to sell"
