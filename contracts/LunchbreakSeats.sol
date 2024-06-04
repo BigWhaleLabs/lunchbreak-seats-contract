@@ -271,9 +271,20 @@ contract LunchbreakSeats is
     seats[user].balances[msg.sender] += amount;
     seats[user].totalSupply += amount;
     emit SeatsBought(user, msg.sender, amount, totalCost, fee);
+
+    if (msg.value > totalCost) {
+      (bool sent, ) = payable(msg.sender).call{value: msg.value - totalCost}(
+        ""
+      );
+      require(sent, "Failed to send ETH");
+    }
   }
 
-  function sellSeats(address user, uint256 amount) public nonReentrant {
+  function sellSeats(
+    address user,
+    uint256 amount,
+    uint256 minSellReturnAmount
+  ) public nonReentrant {
     require(
       seats[user].balances[msg.sender] >= amount,
       "Not enough seats to sell"
@@ -283,6 +294,7 @@ contract LunchbreakSeats is
       seats[user].totalSupply - amount,
       amount
     );
+    require(returnAmount >= minSellReturnAmount, "Insufficient return amount");
     uint256 initialFee = returnAmount / feeDivider;
     uint256 initialCompensation = returnAmount / compensationDivider;
     returnAmount -= initialFee + initialCompensation;

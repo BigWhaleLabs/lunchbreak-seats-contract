@@ -321,7 +321,7 @@ describe('LunchbreakSeats contract tests', () => {
         // Sell seats
         const transactionResponse = await lunchbreakSeats
           .connect(holder)
-          .sellSeats(user.address, amountToSell)
+          .sellSeats(user.address, amountToSell, totalCost)
         const receipt = await transactionResponse.wait()
         if (!receipt) {
           throw new Error('Sell transaction failed')
@@ -514,7 +514,7 @@ describe('LunchbreakSeats contract tests', () => {
         // Holder initiates selling
         const transactionResponse = await lunchbreakSeats
           .connect(holder)
-          .sellSeats(user.address, amountToSell)
+          .sellSeats(user.address, amountToSell, totalReturn)
         const receipt = await transactionResponse.wait()
         if (!receipt) {
           throw new Error('Transaction failed')
