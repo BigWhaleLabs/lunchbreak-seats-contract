@@ -75,12 +75,20 @@ contract LunchbreakSeats is
     uint256 totalSupply;
   }
 
+  struct SeatParameters {
+    uint256 initialPrice;
+    uint256 curveFactor;
+    uint256 feeDivider;
+    uint256 compensationDivider;
+  }
+
   mapping(address => Seats) public seats;
   address public feeRecipient; // Address to receive fees
   uint256 public initialPrice; // Initial price of a seat
   uint256 public curveFactor; // Factor for the bonding curve
   uint256 public feeDivider; // 1 / fee
   uint256 public compensationDivider; // 1 / compensation
+  mapping(address => SeatParameters) public seatParameters;
 
   mapping(address => address) public referrals;
 
@@ -235,6 +243,20 @@ contract LunchbreakSeats is
 
   // Seats logic
 
+  function getCurveParameters(
+    address user
+  ) private returns (SeatParameters memory) {
+    if (seatParameters[user].initialPrice == 0) {
+      seatParameters[user] = SeatParameters(
+        initialPrice,
+        curveFactor,
+        feeDivider,
+        compensationDivider
+      );
+    }
+    return seatParameters[user];
+  }
+
   function distributeFees(
     address userA,
     address userB,
@@ -260,9 +282,16 @@ contract LunchbreakSeats is
   }
 
   function buySeats(address user, uint256 amount) public payable nonReentrant {
-    uint256 totalCost = calculateTotalCost(seats[user].totalSupply, amount);
-    uint256 fee = totalCost / feeDivider;
-    uint256 compensation = totalCost / compensationDivider;
+    SeatParameters memory userSeatParameters = getCurveParameters(user);
+
+    uint256 totalCost = calculateTotalCost(
+      seats[user].totalSupply,
+      amount,
+      userSeatParameters.curveFactor,
+      userSeatParameters.initialPrice
+    );
+    uint256 fee = totalCost / userSeatParameters.feeDivider;
+    uint256 compensation = totalCost / userSeatParameters.compensationDivider;
     require(msg.value >= totalCost, "Insufficient ETH sent");
 
     withdrawableBalances[user] += compensation;
@@ -290,17 +319,23 @@ contract LunchbreakSeats is
       "Not enough seats to sell"
     );
 
+    SeatParameters memory userSeatParameters = getCurveParameters(user);
+
     uint256 returnAmount = calculateTotalCost(
       seats[user].totalSupply - amount,
-      amount
+      amount,
+      userSeatParameters.curveFactor,
+      userSeatParameters.initialPrice
     );
     require(returnAmount >= minSellReturnAmount, "Insufficient return amount");
-    uint256 initialFee = returnAmount / feeDivider;
-    uint256 initialCompensation = returnAmount / compensationDivider;
+    uint256 initialFee = returnAmount / userSeatParameters.feeDivider;
+    uint256 initialCompensation = returnAmount /
+      userSeatParameters.compensationDivider;
     returnAmount -= initialFee + initialCompensation;
 
-    uint256 fee = returnAmount / feeDivider;
-    uint256 compensation = returnAmount / compensationDivider;
+    uint256 fee = returnAmount / userSeatParameters.feeDivider;
+    uint256 compensation = returnAmount /
+      userSeatParameters.compensationDivider;
 
     returnAmount -= fee + compensation;
 
@@ -390,19 +425,26 @@ contract LunchbreakSeats is
 
   // Bonding curve math
 
-  function costOfToken(uint256 tokenId) public view returns (uint256) {
+  function costOfToken(
+    uint256 tokenId,
+    uint256 _curveFactor,
+    uint256 _initialPrice
+  ) public pure returns (uint256) {
     // Bonding curve is 24x^2 - 10x
-    return ((24 * tokenId ** 2) - (10 * tokenId)) * curveFactor + initialPrice;
+    return
+      ((24 * tokenId ** 2) - (10 * tokenId)) * _curveFactor + _initialPrice;
   }
 
   function calculateTotalCost(
     uint256 startId,
-    uint256 numTokens
-  ) public view returns (uint256) {
+    uint256 numTokens,
+    uint256 _curveFactor,
+    uint256 _initialPrice
+  ) public pure returns (uint256) {
     uint256 totalCost = 0;
     uint256 endId = startId + numTokens;
     for (uint256 tokenId = startId; tokenId < endId; tokenId++) {
-      totalCost += costOfToken(tokenId);
+      totalCost += costOfToken(tokenId, _curveFactor, _initialPrice);
     }
     return totalCost;
   }
