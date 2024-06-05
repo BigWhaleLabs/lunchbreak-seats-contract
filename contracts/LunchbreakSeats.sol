@@ -243,6 +243,13 @@ contract LunchbreakSeats is
     return messagesEscrows[user][recipient][index];
   }
 
+  function escrowOf(
+    address user,
+    address recipient
+  ) public view returns (uint256[] memory) {
+    return messagesEscrows[user][recipient];
+  }
+
   function withdrawableBalanceOf(address user) public view returns (uint256) {
     return withdrawableBalances[user];
   }
