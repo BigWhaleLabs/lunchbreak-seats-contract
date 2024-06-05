@@ -636,11 +636,9 @@ describe('LunchbreakSeats contract tests', () => {
           throw new Error('Transaction failed')
         }
 
-        const escrowBalance = await this.lunchbreakSeats.escrowOf(
-          user.address,
-          recipient.address,
-          0
-        )
+        const escrowBalance = await this.lunchbreakSeats[
+          'escrowOf(address,address,uint256)'
+        ](user.address, recipient.address, 0)
 
         const gasUsed = BigInt(receipt.gasUsed * receipt.gasPrice)
         expect(escrowBalance).to.equal(depositAmount)
@@ -667,7 +665,7 @@ describe('LunchbreakSeats contract tests', () => {
 
         const totalDeposit = firstDeposit + secondDeposit
         expect(
-          await this.lunchbreakSeats.escrowOf(
+          await this.lunchbreakSeats['escrowOf(address,address,uint256)'](
             user.address,
             recipient.address,
             0
@@ -705,7 +703,7 @@ describe('LunchbreakSeats contract tests', () => {
           await this.lunchbreakSeats.withdrawableBalances(recipient.address)
 
         expect(
-          await this.lunchbreakSeats.escrowOf(
+          await this.lunchbreakSeats['escrowOf(address,address,uint256)'](
             user.address,
             recipient.address,
             0
@@ -752,7 +750,7 @@ describe('LunchbreakSeats contract tests', () => {
         )
 
         expect(
-          await this.lunchbreakSeats.escrowOf(
+          await this.lunchbreakSeats['escrowOf(address,address,uint256)'](
             user.address,
             recipient.address,
             0
@@ -798,11 +796,9 @@ describe('LunchbreakSeats contract tests', () => {
           throw new Error('Transaction failed')
         }
 
-        const escrowBalance = await this.lunchbreakSeats.escrowOf(
-          user.address,
-          recipient.address,
-          0
-        )
+        const escrowBalance = await this.lunchbreakSeats[
+          'escrowOf(address,address,uint256)'
+        ](user.address, recipient.address, 0)
 
         const gasUsed = BigInt(receipt.gasUsed * receipt.gasPrice)
         expect(escrowBalance).to.equal(depositAmount)
@@ -912,7 +908,7 @@ describe('LunchbreakSeats contract tests', () => {
         )
 
         expect(
-          await this.lunchbreakSeats.escrowOf(
+          await this.lunchbreakSeats['escrowOf(address,address,uint256)'](
             user.address,
             recipient.address,
             0
