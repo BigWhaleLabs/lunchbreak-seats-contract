@@ -176,6 +176,7 @@ contract LunchbreakSeats is
     uint256 _compensationDivider
   ) public initializer {
     __Ownable_init(initialOwner);
+    __ReentrancyGuard_init();
     feeRecipient = _feeRecipient;
     initialPrice = _initialPrice;
     curveFactor = _curveFactor;
