@@ -100,6 +100,8 @@ contract LunchbreakSeats is
 
   // Errors
 
+  error InvalidDivider(uint256 divider);
+  error InvalidReferrer(address user, address referrer);
   error EscrowAlreadyCompleted(address user, address recipient, uint256 index);
   error InsufficientETHSent(uint256 amountSent, uint256 amountRequired);
   error ReturningExtraETHFailed(
@@ -192,21 +194,30 @@ contract LunchbreakSeats is
   // Setters
 
   function setFeeRecipient(address _feeRecipient) public onlyOwner {
+    require(
+      _feeRecipient != address(0),
+      "Fee recipient cannot be zero address"
+    );
     feeRecipient = _feeRecipient;
     emit FeeRecipientSet(_feeRecipient);
   }
 
   function setInitialPrice(uint256 _initialPrice) public onlyOwner {
+    require(_initialPrice > 0, "Initial price must be greater than zero");
     initialPrice = _initialPrice;
     emit InitialPriceSet(_initialPrice);
   }
 
   function setCurveFactor(uint256 _curveFactor) public onlyOwner {
+    require(_curveFactor > 0, "Curve factor must be greater than zero");
     curveFactor = _curveFactor;
     emit CurveFactorSet(_curveFactor);
   }
 
   function setFeeDivider(uint256 _feeDivider) public onlyOwner {
+    if (_feeDivider <= 1) {
+      revert InvalidDivider(_feeDivider);
+    }
     feeDivider = _feeDivider;
     emit FeeDividerSet(_feeDivider);
   }
@@ -214,10 +225,17 @@ contract LunchbreakSeats is
   function setCompensationDivider(
     uint256 _compensationDivider
   ) public onlyOwner {
+    if (_compensationDivider <= 1) {
+      revert InvalidDivider(_compensationDivider);
+    }
     compensationDivider = _compensationDivider;
+    emit CompensationDividerSet(_compensationDivider);
   }
 
   function setReferral(address user, address referrer) public onlyOwner {
+    if (referrer == address(0) || user == address(0) || user == referrer) {
+      revert InvalidReferrer(user, referrer);
+    }
     referrals[user] = referrer;
     emit ReferralSet(user, referrer);
   }
