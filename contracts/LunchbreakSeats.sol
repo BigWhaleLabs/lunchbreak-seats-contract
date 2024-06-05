@@ -375,9 +375,11 @@ contract LunchbreakSeats is
     if (returnAmount < minSellReturnAmount) {
       revert InsufficientReturnAmount(returnAmount, minSellReturnAmount);
     }
-    uint256 initialFee = returnAmount / userSeatParameters.feeDivider;
-    uint256 initialCompensation = returnAmount /
-      userSeatParameters.compensationDivider;
+    uint256 initialFee = (returnAmount + userSeatParameters.feeDivider - 1) /
+      userSeatParameters.feeDivider;
+    uint256 initialCompensation = (returnAmount +
+      userSeatParameters.compensationDivider -
+      1) / userSeatParameters.compensationDivider;
     returnAmount -= initialFee + initialCompensation;
 
     uint256 fee = returnAmount / userSeatParameters.feeDivider;
