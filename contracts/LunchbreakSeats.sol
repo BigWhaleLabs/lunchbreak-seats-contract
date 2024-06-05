@@ -233,7 +233,7 @@ contract LunchbreakSeats is
   }
 
   function setReferral(address user, address referrer) public onlyOwner {
-    if (referrer == address(0) || user == address(0) || user == referrer) {
+    if (user == address(0) || user == referrer) {
       revert InvalidReferrer(user, referrer);
     }
     referrals[user] = referrer;
@@ -349,8 +349,8 @@ contract LunchbreakSeats is
     address user,
     uint256 amount
   ) public payable nonReentrant nonZeroAmount(amount) {
+    // Checks
     SeatParameters memory userSeatParameters = getCurveParameters(user);
-
     uint256 totalCost = calculateTotalCost(
       seats[user].totalSupply,
       amount,
@@ -362,14 +362,13 @@ contract LunchbreakSeats is
     if (msg.value < totalCost) {
       revert InsufficientETHSent(msg.value, totalCost);
     }
-
+    // Effects
     withdrawableBalances[user] += compensation;
     distributeFees(msg.sender, user, fee, 2);
-
     seats[user].balances[msg.sender] += amount;
     seats[user].totalSupply += amount;
     emit SeatsBought(user, msg.sender, amount, totalCost, fee);
-
+    // Interactions
     if (msg.value > totalCost) {
       (bool sent, ) = payable(msg.sender).call{value: msg.value - totalCost}(
         ""
@@ -395,12 +394,11 @@ contract LunchbreakSeats is
     nonZeroAmount(amount)
     nonZeroAmount(minSellReturnAmount)
   {
+    // Checks
     if (amount > seats[user].balances[msg.sender]) {
       revert InsufficientSeatsToSell(amount, seats[user].balances[msg.sender]);
     }
-
     SeatParameters memory userSeatParameters = getCurveParameters(user);
-
     uint256 returnAmount = calculateTotalCost(
       seats[user].totalSupply - amount,
       amount,
@@ -416,24 +414,21 @@ contract LunchbreakSeats is
       userSeatParameters.compensationDivider -
       1) / userSeatParameters.compensationDivider;
     returnAmount -= initialFee + initialCompensation;
-
     uint256 fee = returnAmount / userSeatParameters.feeDivider;
     uint256 compensation = returnAmount /
       userSeatParameters.compensationDivider;
-
     returnAmount -= fee + compensation;
-
+    // Effects
+    withdrawableBalances[user] += compensation;
+    distributeFees(msg.sender, user, fee, 2);
+    seats[user].balances[msg.sender] -= amount;
+    seats[user].totalSupply -= amount;
+    emit SeatsSold(user, msg.sender, amount, returnAmount, fee);
+    // Interactions
     (bool sent, ) = payable(msg.sender).call{value: returnAmount}("");
     if (!sent) {
       revert SendingSellReturnFailed(user, amount, returnAmount);
     }
-
-    withdrawableBalances[user] += compensation;
-    distributeFees(msg.sender, user, fee, 2);
-
-    seats[user].balances[msg.sender] -= amount;
-    seats[user].totalSupply -= amount;
-    emit SeatsSold(user, msg.sender, amount, returnAmount, fee);
   }
 
   // Messages escrow
@@ -449,10 +444,12 @@ contract LunchbreakSeats is
     onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
   {
+    // Checks
     uint256 amount = msg.value;
     if (amount <= 0) {
       revert NoETHSentToFundEscrow(user, recipient, index);
     }
+    // Effects
     messagesEscrows[user][recipient][index] += amount;
     emit EscrowFunded(user, recipient, index, amount);
   }
@@ -468,12 +465,14 @@ contract LunchbreakSeats is
     onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
   {
+    // Checks
     if (messagesEscrows[user][recipient][index] <= 0) {
       revert NoETHInEscrow(user, recipient, index);
     }
     uint256 amount = messagesEscrows[user][recipient][index];
-    messagesEscrows[user][recipient][index] = 0;
     uint256 fee = (amount * 2) / feeDivider;
+    // Effects
+    messagesEscrows[user][recipient][index] = 0;
     withdrawableBalances[recipient] += amount - fee;
     distributeFees(user, recipient, fee, 1);
     completedMessagesEscrows[user][recipient][index] = true;
@@ -491,10 +490,12 @@ contract LunchbreakSeats is
     onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
   {
+    // Checks
     if (messagesEscrows[user][recipient][index] <= 0) {
       revert NoETHInEscrow(user, recipient, index);
     }
     uint256 amount = messagesEscrows[user][recipient][index];
+    // Effects
     messagesEscrows[user][recipient][index] = 0;
     withdrawableBalances[user] += amount;
     completedMessagesEscrows[user][recipient][index] = true;
@@ -504,6 +505,7 @@ contract LunchbreakSeats is
   // Withdrawing funds
 
   function withdraw(uint256 amount) public nonReentrant {
+    // Checks
     require(amount > 0, "No ETH to withdraw");
     if (withdrawableBalances[msg.sender] < amount) {
       revert InsufficientWithdrawableBalance(
@@ -511,12 +513,14 @@ contract LunchbreakSeats is
         withdrawableBalances[msg.sender]
       );
     }
+    // Effects
     withdrawableBalances[msg.sender] -= amount;
+    emit FundsWithdrawn(msg.sender, amount);
+    // Interactions
     (bool sent, ) = payable(msg.sender).call{value: amount}("");
     if (!sent) {
       revert FailedToWithdrawETH(msg.sender, amount);
     }
-    emit FundsWithdrawn(msg.sender, amount);
   }
 
   // Bonding curve math
