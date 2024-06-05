@@ -125,6 +125,11 @@ contract LunchbreakSeats is
 
   // Events
 
+  event FeeRecipientSet(address indexed feeRecipient);
+  event InitialPriceSet(uint256 indexed initialPrice);
+  event CurveFactorSet(uint256 indexed curveFactor);
+  event FeeDividerSet(uint256 indexed feeDivider);
+  event CompensationDividerSet(uint256 indexed compensationDivider);
   event SeatsBought(
     address indexed user,
     address indexed buyer,
@@ -188,18 +193,22 @@ contract LunchbreakSeats is
 
   function setFeeRecipient(address _feeRecipient) public onlyOwner {
     feeRecipient = _feeRecipient;
+    emit FeeRecipientSet(_feeRecipient);
   }
 
   function setInitialPrice(uint256 _initialPrice) public onlyOwner {
     initialPrice = _initialPrice;
+    emit InitialPriceSet(_initialPrice);
   }
 
   function setCurveFactor(uint256 _curveFactor) public onlyOwner {
     curveFactor = _curveFactor;
+    emit CurveFactorSet(_curveFactor);
   }
 
   function setFeeDivider(uint256 _feeDivider) public onlyOwner {
     feeDivider = _feeDivider;
+    emit FeeDividerSet(_feeDivider);
   }
 
   function setCompensationDivider(
