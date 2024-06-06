@@ -1257,6 +1257,303 @@
           ]
         }
       }
+    },
+    "f75d5f59f91d433584a083031f9ea9c6613b332ef1119953b10f968e2147d0b8": {
+      "address": "0xb2417D831Fb1Ad8C23c40Ffe055D1049083D461D",
+      "txHash": "0x41456ed3c6641ec34a4369e0e0cf6fe8447eb3efc2ccd8904be3dc16704a800d",
+      "layout": {
+        "solcVersion": "0.8.23",
+        "storage": [
+          {
+            "label": "seats",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_struct(Seats)641_storage)",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:86"
+          },
+          {
+            "label": "feeRecipient",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:86"
+          },
+          {
+            "label": "initialPrice",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:87"
+          },
+          {
+            "label": "curveFactor",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:88"
+          },
+          {
+            "label": "feeDivider",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:90"
+          },
+          {
+            "label": "compensationDivider",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:90"
+          },
+          {
+            "label": "referrals",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_address)",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:92"
+          },
+          {
+            "label": "messagesEscrow",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:94"
+          },
+          {
+            "label": "messagesEscrows",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_array(t_uint256)dyn_storage))",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:96"
+          },
+          {
+            "label": "completedMessagesEscrows",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_array(t_bool)dyn_storage))",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:97"
+          },
+          {
+            "label": "seatParameters",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_mapping(t_address,t_struct(SeatParameters)650_storage)",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:100"
+          },
+          {
+            "label": "withdrawableBalances",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "LunchbreakSeats",
+            "src": "contracts/LunchbreakSeats.sol:101"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)65_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)14_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ReentrancyGuardStorage)140_storage": {
+            "label": "struct ReentrancyGuardUpgradeable.ReentrancyGuardStorage",
+            "members": [
+              {
+                "label": "_status",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_bool)dyn_storage": {
+            "label": "bool[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_array(t_bool)dyn_storage)": {
+            "label": "mapping(address => bool[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(address => uint256[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_array(t_bool)dyn_storage))": {
+            "label": "mapping(address => mapping(address => bool[]))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_array(t_uint256)dyn_storage))": {
+            "label": "mapping(address => mapping(address => uint256[]))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(SeatParameters)650_storage)": {
+            "label": "mapping(address => struct LunchbreakSeats.SeatParameters)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Seats)641_storage)": {
+            "label": "mapping(address => struct LunchbreakSeats.Seats)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(SeatParameters)650_storage": {
+            "label": "struct LunchbreakSeats.SeatParameters",
+            "members": [
+              {
+                "label": "initialPrice",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "curveFactor",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "feeDivider",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "compensationDivider",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(Seats)641_storage": {
+            "label": "struct LunchbreakSeats.Seats",
+            "members": [
+              {
+                "label": "balances",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "totalSupply",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
     }
   }
 }
