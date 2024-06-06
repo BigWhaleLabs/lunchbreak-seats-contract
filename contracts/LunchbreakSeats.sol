@@ -88,14 +88,16 @@ contract LunchbreakSeats is
   uint256 public curveFactor; // Factor for the bonding curve
   uint256 public feeDivider; // 1 / fee
   uint256 public compensationDivider; // 1 / compensation
-  mapping(address => SeatParameters) public seatParameters;
 
   mapping(address => address) public referrals;
+
+  mapping(address => mapping(address => uint256)) public messagesEscrow; // No longer used after an upgrade
 
   mapping(address => mapping(address => uint256[])) public messagesEscrows;
   mapping(address => mapping(address => bool[]))
     public completedMessagesEscrows;
 
+  mapping(address => SeatParameters) public seatParameters;
   mapping(address => uint256) public withdrawableBalances;
 
   // Errors
