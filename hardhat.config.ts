@@ -10,6 +10,7 @@ dotenv.config()
 const {
   CONTRACT_OWNER_PRIVATE_KEY,
   ETH_RPC,
+  ETH_RPC_MAINNET,
   ETHERSCAN_API_KEY,
   COINMARKETCAP_API_KEY,
 } = cleanEnv(process.env, {
@@ -19,6 +20,7 @@ const {
     ),
   }),
   ETH_RPC: str(),
+  ETH_RPC_MAINNET: str(),
   ETHERSCAN_API_KEY: str({ devDefault: testOnly('') }),
   COINMARKETCAP_API_KEY: str({ devDefault: testOnly('') }),
 })
@@ -39,8 +41,12 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    deploy: {
+    testnet: {
       url: ETH_RPC,
+      accounts: [CONTRACT_OWNER_PRIVATE_KEY],
+    },
+    mainnet: {
+      url: ETH_RPC_MAINNET,
       accounts: [CONTRACT_OWNER_PRIVATE_KEY],
     },
     local: {
