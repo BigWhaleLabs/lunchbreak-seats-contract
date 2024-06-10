@@ -100,10 +100,13 @@ contract LunchbreakSeats is
   mapping(address => SeatParameters) public seatParameters;
   mapping(address => uint256) public withdrawableBalances;
 
+  address public referralManager;
+
   // Errors
 
   error InvalidDivider(uint256 divider);
   error InvalidReferrer(address user, address referrer);
+  error InvalidReferralManager(address referralManager);
   error EscrowAlreadyCompleted(address user, address recipient, uint256 index);
   error InsufficientETHSent(uint256 amountSent, uint256 amountRequired);
   error ReturningExtraETHFailed(
@@ -173,6 +176,7 @@ contract LunchbreakSeats is
     uint256 amount
   );
   event FundsWithdrawn(address indexed user, uint256 amount);
+  event ReferralManagerSet(address indexed referralManager);
 
   // Initializer
 
@@ -234,12 +238,23 @@ contract LunchbreakSeats is
     emit CompensationDividerSet(_compensationDivider);
   }
 
-  function setReferral(address user, address referrer) public onlyOwner {
+  function setReferral(
+    address user,
+    address referrer
+  ) public onlyReferralManager {
     if (user == address(0) || user == referrer) {
       revert InvalidReferrer(user, referrer);
     }
     referrals[user] = referrer;
     emit ReferralSet(user, referrer);
+  }
+
+  function setReferralManager(address _referralManager) public onlyOwner {
+    if (_referralManager == address(0)) {
+      revert InvalidReferralManager(_referralManager);
+    }
+    referralManager = _referralManager;
+    emit ReferralManagerSet(_referralManager);
   }
 
   // Getters
@@ -304,6 +319,14 @@ contract LunchbreakSeats is
 
   modifier nonZeroAmount(uint256 amount) {
     require(amount > 0, "Amount must be greater than 0");
+    _;
+  }
+
+  modifier onlyReferralManager() {
+    require(
+      msg.sender == referralManager,
+      "Only the referral manager can call this function"
+    );
     _;
   }
 

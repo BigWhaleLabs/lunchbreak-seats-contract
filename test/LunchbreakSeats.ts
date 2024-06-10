@@ -404,6 +404,7 @@ describe('LunchbreakSeats contract tests', () => {
           await ethers.getSigners()
         await this.lunchbreakSeats.setFeeRecipient(feeRecipient.address)
         // Set referrals
+        await this.lunchbreakSeats.setReferralManager(owner.address)
         await this.lunchbreakSeats.setReferral(
           buyer.address,
           buyerReferral.address
@@ -766,6 +767,7 @@ describe('LunchbreakSeats contract tests', () => {
     beforeEach(async function () {
       ;[owner, user, recipient, referrerUser, referrerRecipient] =
         await ethers.getSigners()
+      await this.lunchbreakSeats.setReferralManager(owner.address)
       await this.lunchbreakSeats.setReferral(user.address, referrerUser.address)
       await this.lunchbreakSeats.setReferral(
         recipient.address,
