@@ -101,12 +101,14 @@ contract LunchbreakSeats is
   mapping(address => uint256) public withdrawableBalances;
 
   address public referralManager;
+  address public escrowManager;
 
   // Errors
 
   error InvalidDivider(uint256 divider);
   error InvalidReferrer(address user, address referrer);
   error InvalidReferralManager(address referralManager);
+  error InvalidEscrowManager(address escrowManager);
   error EscrowAlreadyCompleted(address user, address recipient, uint256 index);
   error InsufficientETHSent(uint256 amountSent, uint256 amountRequired);
   error ReturningExtraETHFailed(
@@ -177,6 +179,7 @@ contract LunchbreakSeats is
   );
   event FundsWithdrawn(address indexed user, uint256 amount);
   event ReferralManagerSet(address indexed referralManager);
+  event EscrowManagerSet(address indexed escrowManager);
 
   // Initializer
 
@@ -257,6 +260,14 @@ contract LunchbreakSeats is
     emit ReferralManagerSet(_referralManager);
   }
 
+  function setEscrowManager(address _escrowManager) public onlyOwner {
+    if (_escrowManager == address(0)) {
+      revert InvalidEscrowManager(_escrowManager);
+    }
+    escrowManager = _escrowManager;
+    emit EscrowManagerSet(_escrowManager);
+  }
+
   // Getters
 
   function balanceOf(
@@ -326,6 +337,14 @@ contract LunchbreakSeats is
     require(
       msg.sender == referralManager,
       "Only the referral manager can call this function"
+    );
+    _;
+  }
+
+  modifier onlyEscrowManager() {
+    require(
+      msg.sender == escrowManager,
+      "Only the escrow manager can call this function"
     );
     _;
   }
@@ -488,7 +507,7 @@ contract LunchbreakSeats is
   )
     public
     nonReentrant
-    onlyOwner
+    onlyEscrowManager
     onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
   {
@@ -513,7 +532,7 @@ contract LunchbreakSeats is
   )
     public
     nonReentrant
-    onlyOwner
+    onlyEscrowManager
     onlyExistingEscrow(user, recipient, index)
     onlyUncompletedEscrow(user, recipient, index)
   {

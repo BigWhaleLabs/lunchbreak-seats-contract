@@ -610,6 +610,7 @@ describe('LunchbreakSeats contract tests', () => {
 
     beforeEach(async function () {
       ;[owner, user, recipient] = await ethers.getSigners()
+      await this.lunchbreakSeats.setEscrowManager(owner.address)
     })
 
     describe('Fund Escrow', function () {
@@ -773,6 +774,7 @@ describe('LunchbreakSeats contract tests', () => {
         recipient.address,
         referrerRecipient.address
       )
+      await this.lunchbreakSeats.setEscrowManager(owner.address)
     })
 
     describe('Fund Escrow with Referral', function () {
