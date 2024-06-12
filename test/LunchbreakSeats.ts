@@ -413,6 +413,18 @@ describe('LunchbreakSeats contract tests', () => {
           seller.address,
           sellerReferral.address
         )
+        const totalCost: bigint = await this.lunchbreakSeats.calculateTotalCost(
+          0,
+          1,
+          await this.lunchbreakSeats.curveFactor(),
+          await this.lunchbreakSeats.initialPrice()
+        )
+        await this.lunchbreakSeats
+          .connect(buyerReferral)
+          .buySeats(buyer.address, 1, { value: totalCost })
+        await this.lunchbreakSeats
+          .connect(sellerReferral)
+          .buySeats(seller.address, 1, { value: totalCost })
       })
 
       async function buySeatsWithReferral(
@@ -775,6 +787,19 @@ describe('LunchbreakSeats contract tests', () => {
         referrerRecipient.address
       )
       await this.lunchbreakSeats.setEscrowManager(owner.address)
+
+      const totalCost: bigint = await this.lunchbreakSeats.calculateTotalCost(
+        0,
+        1,
+        await this.lunchbreakSeats.curveFactor(),
+        await this.lunchbreakSeats.initialPrice()
+      )
+      await this.lunchbreakSeats
+        .connect(referrerUser)
+        .buySeats(user.address, 1, { value: totalCost })
+      await this.lunchbreakSeats
+        .connect(referrerRecipient)
+        .buySeats(recipient.address, 1, { value: totalCost })
     })
 
     describe('Fund Escrow with Referral', function () {

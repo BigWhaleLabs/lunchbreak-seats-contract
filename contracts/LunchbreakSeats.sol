@@ -374,16 +374,22 @@ contract LunchbreakSeats is
     uint256 multiplier
   ) private {
     uint256 userAReferrerFee = 0;
-    if (referrals[userA] != address(0)) {
+    address userAReferrer = referrals[userA];
+    if (
+      userAReferrer != address(0) && seats[userA].balances[userAReferrer] > 0
+    ) {
       userAReferrerFee = (totalFee * multiplier) / 5;
-      withdrawableBalances[referrals[userA]] += userAReferrerFee;
-      emit ReferralPaid(userA, referrals[userA], userAReferrerFee);
+      withdrawableBalances[userAReferrer] += userAReferrerFee;
+      emit ReferralPaid(userA, userAReferrer, userAReferrerFee);
     }
     uint256 userBReferrerFee = 0;
-    if (referrals[userB] != address(0)) {
+    address userBReferrer = referrals[userB];
+    if (
+      userBReferrer != address(0) && seats[userB].balances[userBReferrer] > 0
+    ) {
       userBReferrerFee = (totalFee * multiplier) / 5;
-      withdrawableBalances[referrals[userB]] += userBReferrerFee;
-      emit ReferralPaid(userB, referrals[userB], userBReferrerFee);
+      withdrawableBalances[userBReferrer] += userBReferrerFee;
+      emit ReferralPaid(userB, userBReferrer, userBReferrerFee);
     }
     withdrawableBalances[feeRecipient] +=
       totalFee -
