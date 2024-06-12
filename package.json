@@ -28,7 +28,7 @@
     "upgrade-testnet": "npx hardhat run --network testnet scripts/upgrade.ts",
     "eth-lint": "yarn solhint 'contracts/**/*.sol'",
     "lint": "prettier --check . && eslint --max-warnings 0 --ext ts scripts test && yarn eth-lint",
-    "release": "np",
+    "release": "yarn prepublishOnly && np",
     "prepublishOnly": "yarn build && yarn tsc --skipLibCheck"
   },
   "devDependencies": {
