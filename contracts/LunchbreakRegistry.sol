@@ -80,11 +80,8 @@ contract LunchbreakRegistry is
 
   // Initializer
 
-  function initialize(
-    address initialOwner,
-    address _lunchbreakSeats
-  ) public initializer {
-    __Ownable_init(initialOwner);
+  function initialize(address _lunchbreakSeats) public initializer {
+    __Ownable_init(msg.sender);
     __ReentrancyGuard_init();
     lunchbreakSeats = LunchbreakSeats(_lunchbreakSeats);
   }
