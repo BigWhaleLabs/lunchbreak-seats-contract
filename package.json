@@ -26,6 +26,7 @@
     "deploy-testnet": "npx hardhat run --network testnet scripts/deploy.ts",
     "deploy-registry-mainnet": "npx hardhat run --network mainnet scripts/deploy-registry.ts",
     "deploy-registry-testnet": "npx hardhat run --network testnet scripts/deploy-registry.ts",
+    "deploy-scout-pass-mainnet": "npx hardhat run --network mainnet scripts/deploy-scout-pass.ts",
     "upgrade-mainnet": "npx hardhat run --network mainnet scripts/upgrade.ts",
     "upgrade-testnet": "npx hardhat run --network testnet scripts/upgrade.ts",
     "eth-lint": "yarn solhint 'contracts/**/*.sol'",
