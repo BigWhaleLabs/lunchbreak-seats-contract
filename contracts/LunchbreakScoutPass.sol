@@ -65,6 +65,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155Burn
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "./LunchbreakSeats.sol";
 
 contract LunchbreakScoutPass is
   Initializable,
@@ -78,12 +79,14 @@ contract LunchbreakScoutPass is
 
   uint256 public tokenId;
   uint256 public rate;
+  address public seats;
 
   // Errors
 
   error WrongEtherValueSent(uint256 amount);
   error FailedToWithdrawETH(address user, uint256 amount);
   error WrongRate(uint256 rate);
+  error NotEnoughTokens(uint256 amount);
 
   // Events
 
@@ -92,6 +95,8 @@ contract LunchbreakScoutPass is
   event RateSet(uint256 newRate);
   event URISet(string newURI);
   event TokenIdSet(uint256 newTokenId);
+  event TokensBurned(address indexed account, uint256 amount);
+  event SeatsSet(address newSeats);
 
   // Initializer
 
@@ -130,6 +135,11 @@ contract LunchbreakScoutPass is
     emit TokenIdSet(newTokenId);
   }
 
+  function setSats(address newSeats) public onlyOwner nonReentrant {
+    seats = newSeats;
+    emit SeatsSet(newSeats);
+  }
+
   // Utils
 
   function pause() public onlyOwner nonReentrant {
@@ -143,17 +153,50 @@ contract LunchbreakScoutPass is
   // Minting
 
   function mintTokens() public payable whenNotPaused nonReentrant {
+    // Checks
     if (msg.value % rate != 0) {
       revert WrongEtherValueSent(msg.value);
     }
+    // Effects
     uint256 tokenAmount = msg.value / rate;
     _mint(msg.sender, tokenId, tokenAmount, "");
     emit TokensMinted(msg.sender, tokenAmount);
   }
 
+  // Burning
+
+  function burnTokens(uint256 amount) public nonReentrant {
+    // Checks
+    if (balanceOf(msg.sender, tokenId) < amount) {
+      revert NotEnoughTokens(amount);
+    }
+    // Effects
+    _burn(msg.sender, tokenId, amount);
+    emit TokensBurned(msg.sender, amount);
+    // Interactions
+    (bool sent, ) = payable(msg.sender).call{value: rate * amount}("");
+    if (!sent) {
+      revert FailedToWithdrawETH(msg.sender, amount);
+    }
+  }
+
+  function burnTokenAndBuySeat(address user) public payable nonReentrant {
+    // Checks
+    if (balanceOf(user, tokenId) < 1) {
+      revert NotEnoughTokens(1);
+    }
+    // Effects
+    _burn(user, tokenId, 1);
+    emit TokensBurned(user, 1);
+    // Interactions
+    LunchbreakSeats(seats).buySeats{value: msg.value}(user, 1);
+  }
+
   receive() external payable {
     mintTokens();
   }
+
+  // Admin function to withdraw the contract's balance
 
   function withdraw(uint256 amount) public onlyOwner nonReentrant {
     (bool sent, ) = payable(msg.sender).call{value: amount}("");
