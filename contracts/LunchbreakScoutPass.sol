@@ -97,6 +97,7 @@ contract LunchbreakScoutPass is
   event TokenIdSet(uint256 newTokenId);
   event TokensBurned(address indexed account, uint256 amount);
   event SeatsSet(address newSeats);
+  event ScoutingCompleted(address indexed scoutedUser);
 
   // Initializer
 
@@ -188,6 +189,7 @@ contract LunchbreakScoutPass is
     // Effects
     _burn(msg.sender, tokenId, 1);
     emit TokensBurned(msg.sender, 1);
+    emit ScoutingCompleted(user);
     // Interactions
     LunchbreakSeats(seats).buySeats{value: msg.value}(user, 1);
   }
