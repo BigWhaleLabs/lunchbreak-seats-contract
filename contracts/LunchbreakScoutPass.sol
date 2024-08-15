@@ -182,12 +182,12 @@ contract LunchbreakScoutPass is
 
   function burnTokenAndBuySeat(address user) public payable nonReentrant {
     // Checks
-    if (balanceOf(user, tokenId) < 1) {
+    if (balanceOf(msg.sender, tokenId) < 1) {
       revert NotEnoughTokens(1);
     }
     // Effects
-    _burn(user, tokenId, 1);
-    emit TokensBurned(user, 1);
+    _burn(msg.sender, tokenId, 1);
+    emit TokensBurned(msg.sender, 1);
     // Interactions
     LunchbreakSeats(seats).buySeats{value: msg.value}(user, 1);
   }
