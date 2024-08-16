@@ -1,14 +1,11 @@
-import { ethers, network, run, upgrades } from 'hardhat'
+import { ethers, run, upgrades } from 'hardhat'
 
 async function main() {
-  const factory = await ethers.getContractFactory('LunchbreakSeats')
-  const proxyAddress =
-    network.name === 'testnet'
-      ? '0x2afd25e8aDFe037b79c25D1518ac9A6b8136Fd3e'
-      : '0x0dfdbe6284ed9b97aecaef1c8cffe00b46d94e71'
-  console.log('Upgrading LunchbreakSeats...')
+  const factory = await ethers.getContractFactory('LunchbreakScoutPass')
+  const proxyAddress = '0xA77F3AEc747a08Bf80682E002a26F88B59612c7F'
+  console.log('Upgrading LunchbreakScoutPass...')
   const contract = await upgrades.upgradeProxy(proxyAddress as string, factory)
-  console.log('LunchbreakSeats upgraded')
+  console.log('LunchbreakScoutPass upgraded')
   console.log(
     await upgrades.erc1967.getImplementationAddress(
       await contract.getAddress()

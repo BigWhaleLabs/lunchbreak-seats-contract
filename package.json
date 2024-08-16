@@ -29,6 +29,7 @@
     "deploy-scout-pass-mainnet": "npx hardhat run --network mainnet scripts/deploy-scout-pass.ts",
     "upgrade-mainnet": "npx hardhat run --network mainnet scripts/upgrade.ts",
     "upgrade-testnet": "npx hardhat run --network testnet scripts/upgrade.ts",
+    "upgrade-scout-pass-mainnet": "npx hardhat run --network mainnet scripts/upgrade-scout-pass.ts",
     "eth-lint": "yarn solhint 'contracts/**/*.sol'",
     "lint": "prettier --check . && eslint --max-warnings 0 --ext ts scripts test && yarn eth-lint",
     "release": "yarn prepublishOnly && np",

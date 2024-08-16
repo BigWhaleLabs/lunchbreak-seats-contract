@@ -136,7 +136,7 @@ contract LunchbreakScoutPass is
     emit TokenIdSet(newTokenId);
   }
 
-  function setSats(address newSeats) public onlyOwner nonReentrant {
+  function setSeats(address newSeats) public onlyOwner nonReentrant {
     seats = newSeats;
     emit SeatsSet(newSeats);
   }
