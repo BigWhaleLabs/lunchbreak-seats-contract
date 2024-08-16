@@ -258,7 +258,9 @@ describe('LunchbreakSeats contract tests', () => {
         // Buy seats
         const transactionResponse = await lunchbreakSeats
           .connect(buyer)
-          .buySeats(seller.address, amountToBuy, { value: totalCost })
+          [
+            'buySeats(address,uint256)'
+          ](seller.address, amountToBuy, { value: totalCost })
         const receipt = await transactionResponse.wait()
         if (!receipt) {
           throw new Error('Buy transaction failed')
@@ -421,10 +423,10 @@ describe('LunchbreakSeats contract tests', () => {
         )
         await this.lunchbreakSeats
           .connect(buyerReferral)
-          .buySeats(buyer.address, 1, { value: totalCost })
+          ['buySeats(address,uint256)'](buyer.address, 1, { value: totalCost })
         await this.lunchbreakSeats
           .connect(sellerReferral)
-          .buySeats(seller.address, 1, { value: totalCost })
+          ['buySeats(address,uint256)'](seller.address, 1, { value: totalCost })
       })
 
       async function buySeatsWithReferral(
@@ -464,7 +466,9 @@ describe('LunchbreakSeats contract tests', () => {
         // Buyer initiates purchase
         const transactionResponse = await lunchbreakSeats
           .connect(buyer)
-          .buySeats(seller.address, amountToBuy, { value: totalCost })
+          [
+            'buySeats(address,uint256)'
+          ](seller.address, amountToBuy, { value: totalCost })
         const receipt = await transactionResponse.wait()
         if (!receipt) {
           throw new Error('Transaction failed')
@@ -796,10 +800,12 @@ describe('LunchbreakSeats contract tests', () => {
       )
       await this.lunchbreakSeats
         .connect(referrerUser)
-        .buySeats(user.address, 1, { value: totalCost })
+        ['buySeats(address,uint256)'](user.address, 1, { value: totalCost })
       await this.lunchbreakSeats
         .connect(referrerRecipient)
-        .buySeats(recipient.address, 1, { value: totalCost })
+        [
+          'buySeats(address,uint256)'
+        ](recipient.address, 1, { value: totalCost })
     })
 
     describe('Fund Escrow with Referral', function () {

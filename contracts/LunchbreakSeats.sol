@@ -397,9 +397,14 @@ contract LunchbreakSeats is
       userBReferrerFee;
   }
 
+  function buySeats(address user, uint256 amount) public payable {
+    buySeats(user, amount, msg.sender);
+  }
+
   function buySeats(
     address user,
-    uint256 amount
+    uint256 amount,
+    address recipient
   ) public payable nonReentrant nonZeroAmount(amount) {
     // Checks
     SeatParameters memory userSeatParameters = getCurveParameters(user);
@@ -416,10 +421,10 @@ contract LunchbreakSeats is
     }
     // Effects
     withdrawableBalances[user] += compensation;
-    distributeFees(msg.sender, user, fee, 2);
-    seats[user].balances[msg.sender] += amount;
+    distributeFees(recipient, user, fee, 2);
+    seats[user].balances[recipient] += amount;
     seats[user].totalSupply += amount;
-    emit SeatsBought(user, msg.sender, amount, totalCost, fee);
+    emit SeatsBought(user, recipient, amount, totalCost, fee);
     // Interactions
     if (msg.value > totalCost) {
       (bool sent, ) = payable(msg.sender).call{value: msg.value - totalCost}(

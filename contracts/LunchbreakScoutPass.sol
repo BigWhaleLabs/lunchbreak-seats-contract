@@ -167,6 +167,7 @@ contract LunchbreakScoutPass is
   // Burning
 
   function burnTokens(uint256 amount) public nonReentrant {
+    require(false, "This function is disabled");
     // Checks
     if (balanceOf(msg.sender, tokenId) < amount) {
       revert NotEnoughTokens(amount);
@@ -191,7 +192,7 @@ contract LunchbreakScoutPass is
     emit TokensBurned(msg.sender, 1);
     emit ScoutingCompleted(user);
     // Interactions
-    LunchbreakSeats(seats).buySeats{value: msg.value}(user, 1);
+    LunchbreakSeats(seats).buySeats{value: msg.value}(user, 1, msg.sender);
   }
 
   receive() external payable {
