@@ -154,6 +154,7 @@ contract LunchbreakScoutPass is
   // Minting
 
   function mintTokens() public payable whenNotPaused nonReentrant {
+    require(false, "Minting is disabled");
     // Checks
     if (msg.value % rate != 0) {
       revert WrongEtherValueSent(msg.value);
