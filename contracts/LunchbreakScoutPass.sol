@@ -167,7 +167,6 @@ contract LunchbreakScoutPass is
   // Burning
 
   function burnTokens(uint256 amount) public nonReentrant {
-    require(false, "This function is disabled");
     // Checks
     if (balanceOf(msg.sender, tokenId) < amount) {
       revert NotEnoughTokens(amount);
