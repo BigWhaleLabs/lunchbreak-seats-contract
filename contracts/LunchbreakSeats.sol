@@ -103,6 +103,8 @@ contract LunchbreakSeats is
   address public referralManager;
   address public escrowManager;
 
+  uint256 public scoutingFee;
+
   // Errors
 
   error InvalidDivider(uint256 divider);
@@ -131,6 +133,7 @@ contract LunchbreakSeats is
   error NoETHInEscrow(address user, address recipient, uint256 index);
   error InsufficientWithdrawableBalance(uint256 amount, uint256 requiredAmount);
   error FailedToWithdrawETH(address user, uint256 amount);
+  error InsufficientScoutingFee(uint256 scoutingFee, uint256 amountSent);
 
   // Events
 
@@ -180,6 +183,8 @@ contract LunchbreakSeats is
   event FundsWithdrawn(address indexed user, uint256 amount);
   event ReferralManagerSet(address indexed referralManager);
   event EscrowManagerSet(address indexed escrowManager);
+  event ScoutingFeeSet(uint256 indexed scoutingFee);
+  event ScoutingCompleted(address indexed scoutedUser);
 
   // Initializer
 
@@ -266,6 +271,11 @@ contract LunchbreakSeats is
     }
     escrowManager = _escrowManager;
     emit EscrowManagerSet(_escrowManager);
+  }
+
+  function setScoutingFee(uint256 _scoutingFee) public onlyOwner {
+    scoutingFee = _scoutingFee;
+    emit ScoutingFeeSet(_scoutingFee);
   }
 
   // Getters
@@ -395,6 +405,17 @@ contract LunchbreakSeats is
       totalFee -
       userAReferrerFee -
       userBReferrerFee;
+  }
+
+  function payScoutingFeeAndBuySeat(address user) public payable {
+    // Send scouting fee
+    (bool sent, ) = payable(feeRecipient).call{value: scoutingFee}("");
+    if (!sent) {
+      revert InsufficientScoutingFee(scoutingFee, msg.value);
+    }
+    // Buy seat
+    buySeats(user, 1);
+    emit ScoutingCompleted(user);
   }
 
   function buySeats(address user, uint256 amount) public payable {
