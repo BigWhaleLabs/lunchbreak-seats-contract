@@ -363,7 +363,7 @@ contract LunchbreakSeats is
 
   function getCurveParameters(
     address user
-  ) private returns (SeatParameters memory) {
+  ) public returns (SeatParameters memory) {
     if (
       seatParameters[user].initialPrice == 0 || seats[user].totalSupply == 0
     ) {
