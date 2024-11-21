@@ -196,7 +196,7 @@ contract LunchbreakScoutPass is
   }
 
   receive() external payable {
-    mintTokens();
+    // mintTokens();
   }
 
   // Admin function to withdraw the contract's balance
